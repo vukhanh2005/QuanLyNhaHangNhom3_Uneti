@@ -18,12 +18,12 @@ namespace QuanLyNhaHang
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            // builder.Services.AddDbContext<AppDbContext>(options =>
-            // {
-            //     options.UseSqlServer(
-            //         builder.Configuration.GetConnectionString("DefaultConnection")
-            //     );
-            // });
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                );
+            });
             var app = builder.Build();
             app.UseSession();
             // Configure the HTTP request pipeline.
@@ -38,7 +38,7 @@ namespace QuanLyNhaHang
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
+                pattern: "{controller=DangNhap}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
