@@ -42,7 +42,6 @@ namespace QuanLyNhaHang
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}")
                 .WithStaticAssets();
-
             app.Run();
         }
     }

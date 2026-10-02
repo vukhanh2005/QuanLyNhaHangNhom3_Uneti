@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Models;
 
 namespace QuanLyNhaHang.Repository
@@ -31,6 +32,10 @@ namespace QuanLyNhaHang.Repository
         public TaiKhoan getAccountByPassword(string password)
         {
             return null;
+        }
+        public async Task themTaiKhoan(TaiKhoan account)
+        {
+            this.context.Add(account);
         }
     }
 }
