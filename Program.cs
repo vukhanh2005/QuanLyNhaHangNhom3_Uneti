@@ -38,7 +38,7 @@ namespace QuanLyNhaHang
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=DangNhap}/{action=Index}/{id?}")
+                pattern: "{controller=MonAn}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
