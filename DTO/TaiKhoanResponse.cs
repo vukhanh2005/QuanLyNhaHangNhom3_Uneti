@@ -16,9 +16,9 @@ namespace QuanLyNhaHang.DTO
             this.trangThai = trangThai;
             this.message = message;
         }       
-        public TaiKhoanResponse()
+        public TaiKhoanResponse(string message)
         {
-            
+            this.message = message;
         }
         public int maTaiKhoan { get; set; }
         public string username { get; set; }
@@ -28,5 +28,19 @@ namespace QuanLyNhaHang.DTO
         public string vaiTro { get; set; }
         public bool trangThai { get; set; }
         public string message { get; set; }
+
+        public TaiKhoan ConvertToTaiKhoan()
+        {
+            TaiKhoan rs = new TaiKhoan();
+            rs.MaTaiKhoan = maTaiKhoan;
+            rs.TenDangNhap = username;
+            rs.MatKhau = password;
+            rs.HoTen = hoTen;
+            rs.TrangThai = trangThai;
+            rs.VaiTro = vaiTro.Equals(VaiTro.Admin.ToString()) ? VaiTro.Admin : VaiTro.User;
+            rs.Email = email;
+
+            return rs;
+        }
     }
 }

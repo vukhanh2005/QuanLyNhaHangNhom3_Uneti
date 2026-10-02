@@ -20,7 +20,7 @@ namespace QuanLyNhaHang.Controllers.Module01
         [HttpPost]
         public async Task<IActionResult> Login(TaiKhoanRequest request)
         {
-            TaiKhoanResponse response = await service.Login(request.username, request.password);
+            TaiKhoanResponse response = await service.Login(request);
     
             if (response.message.StartsWith("[SUCCESS]"))
             {
@@ -36,6 +36,15 @@ namespace QuanLyNhaHang.Controllers.Module01
         public IActionResult Register()
         {
             return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Register(TaiKhoanRequest request)
+        {
+            System.Console.WriteLine(
+                $"Username: {request.username}\n Password: {request.password} \n Confirm Password: {request.confirmPassword}"+
+                $"Name: {request.hoTen}\n Email: {request.email}"
+            );
+            return View("Test");
         }
     }
 }
