@@ -59,10 +59,42 @@
 
             flex-direction: column;
         }
+        .success-message{
+            color: green;
+            font-size: larger;
+        }
+        .fail-message{
+            color: red;
+            font-size: larger;
+        }
     </style>
 </head>
 <body>
     <div class="wrapper">
+        @{
+            if(ViewBag.SuccessMessage != null)
+            {
+                //Dang ki thanh cong thi chuyen huong den trang dang nhap
+                <b>
+                    <p class="success-message">
+                        @ViewBag.SuccessMessage
+                    </p>
+                </b>
+                <script>
+                    setTimeout(()=>{
+                        window.location.href = "youtube.com"
+                    }, 3000)
+                </script>
+            }
+            if(ViewBag.FailMessage != null)
+            {
+                <b>
+                    <p class="fail-message">
+                        @ViewBag.FailMessage
+                    </p>
+                </b>
+            }
+        }
         <form class="register-form" method="post" asp-controller="Account" asp-action="Register">
             <div class="input-register-box">
                 <label>Ho Va Ten</label>
