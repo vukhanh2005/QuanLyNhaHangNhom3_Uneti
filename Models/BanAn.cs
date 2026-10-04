@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+// Họ và tên: Vi Thái Học
+// Mã sinh viên: [ĐIỀN MÃ SINH VIÊN]
+// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
 namespace QuanLyNhaHangNhom3_Uneti.Models
 {
     public class BanAn
@@ -11,11 +14,11 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
         [StringLength(100)]
         public string TenBan { get; set; } = string.Empty;
 
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn loại bàn.")]
         public int MaLoaiBan { get; set; }
 
         [Required]
-        [Range(1, 100, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0")]
         public int SoChoNgoi { get; set; }
 
         [Required(ErrorMessage = "Vị trí không được để trống")]
@@ -26,6 +29,11 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
         public string? MoTa { get; set; }
 
         [Required]
-        public string TrangThai { get; set; } = "Sẵn sàng";
+        [StringLength(30)]
+        [RegularExpression(BanAnTrangThai.Pattern, ErrorMessage = "Trạng thái không hợp lệ.")]
+        public string TrangThai { get; set; } = BanAnTrangThai.SanSang;
+
+        // Khi Module 3 có entity chính thức, thêm navigation và FK DeleteBehavior.Restrict:
+        // public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
     }
 }
