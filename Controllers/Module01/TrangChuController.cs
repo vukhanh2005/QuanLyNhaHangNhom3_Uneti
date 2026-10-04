@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace QuanLyNhaHang.Controllers
 {
-    public class HomeController : Controller
+    public class TrangChuController : Controller
     {
         public IActionResult Index()
         {
