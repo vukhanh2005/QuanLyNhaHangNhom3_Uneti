@@ -1,5 +1,5 @@
 # Họ và tên: Vi Thái Học
-# Mã sinh viên: [ĐIỀN MÃ SINH VIÊN]
+# Mã sinh viên: 23103100054
 # Nội dung thực hiện: Kiểm tra validation, truy vấn và phân quyền Module 2.
 $ErrorActionPreference = 'Stop'
 $repoPath = Split-Path $PSScriptRoot -Parent

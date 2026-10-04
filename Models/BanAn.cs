@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 // Họ và tên: Vi Thái Học
-// Mã sinh viên: [ĐIỀN MÃ SINH VIÊN]
+// Mã sinh viên: 23103100054
 // Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
 namespace QuanLyNhaHangNhom3_Uneti.Models
 {
