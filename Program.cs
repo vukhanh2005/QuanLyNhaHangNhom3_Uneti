@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.Models;
+using QuanLyNhaHang.Repository;
 
 namespace QuanLyNhaHang
 {
@@ -11,7 +13,7 @@ namespace QuanLyNhaHang
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
-
+            builder.Services.AddScoped<AccountRepository>();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromSeconds(10);
@@ -38,9 +40,8 @@ namespace QuanLyNhaHang
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=DangNhap}/{action=Index}/{id?}")
+                pattern: "{controller=Account}/{action=Login}/{id?}")
                 .WithStaticAssets();
-
             app.Run();
         }
     }
