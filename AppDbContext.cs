@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHangNhom3_Uneti.Models;
+using QuanLyNhaHang.Models;
 
 public class AppDbContext : DbContext{
     public DbSet<TaiKhoan> TaiKhoans {get; set;}
