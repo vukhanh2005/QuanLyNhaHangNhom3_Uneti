@@ -68,7 +68,7 @@ namespace QuanLyNhaHang.Controllers.Module04
                 SoBanTheoTrangThai = soBanTheoTrangThai
             };
 
-            return View(model);
+            return View("~/Views/Module04/Dashboard/Index.cshtml", model);
         }
     }
 }
