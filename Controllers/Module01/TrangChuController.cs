@@ -8,7 +8,16 @@ namespace QuanLyNhaHang.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            if(HttpContext.Session.GetInt32("MaTaiKhoan") != null)
+            {
+                //Da dang nhap roi
+                return View();
+            }
+            else
+            {
+                //Direct den trang dang nhap
+                return RedirectToAction("Login", "Account");
+            }
         }
 
         public IActionResult Privacy()

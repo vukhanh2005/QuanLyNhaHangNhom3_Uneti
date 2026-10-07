@@ -1,3 +1,4 @@
+using Azure;
 using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Repository;
@@ -24,11 +25,17 @@ namespace QuanLyNhaHang.Controllers.Module01
     
             if (response.message.StartsWith("[SUCCESS]"))
             {
-                return RedirectToAction("Index", "TrangChu");
+                //Luu vao session
+                HttpContext.Session.SetInt32("MaTaiKhoan", response.maTaiKhoan);
+                HttpContext.Session.SetString("HoTen", response.hoTen);
+                HttpContext.Session.SetString("VaiTro", response.vaiTro);
+                ViewBag.SuccessMessage = response.message.Substring(7);
+                return View("Login");
             }
             else
             {
                 ViewData["Message"] = response.message.Substring(7);
+                ViewBag.FailMessage = response.message;
                 return View("Login");
             }
         }
@@ -49,7 +56,7 @@ namespace QuanLyNhaHang.Controllers.Module01
             if (response.message.StartsWith("[SUCCESS]"))
             {
                 // System.Console.WriteLine($"Dang ki thanh cong tai khaon :{response.username}-{response.password}");
-                ViewBag.SuccessMessage = response.message.Substring(6);
+                ViewBag.SuccessMessage = response.message.Substring(9);
                 return View("Register");
             }
             else

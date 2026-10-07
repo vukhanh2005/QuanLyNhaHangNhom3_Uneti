@@ -81,7 +81,7 @@ namespace QuanLyNhaHang.Service
                 }
                 else
                 {
-                    string message = "[FAIL] Mật khẩu không chính xác";
+                    string message = "Mật khẩu không chính xác";
                     TaiKhoanResponse response = new TaiKhoanResponse(message);
                     return response;
                 }
@@ -89,7 +89,7 @@ namespace QuanLyNhaHang.Service
             else
             {
                 //Acc khong ton tai
-                string message = "[FAIL] Tài khoản không có trong hệ thống";
+                string message = "Tài khoản không có trong hệ thống";
                 TaiKhoanResponse response = new TaiKhoanResponse(message);
                 return response;
             }
