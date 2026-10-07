@@ -1,4 +1,6 @@
-
+// Họ và tên: Vi Thái Học
+// Mã sinh viên: 23103100054
+// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
 using QuanLyNhaHang.ViewModels;
 using QuanLyNhaHangNhom3_Uneti.Models;
 
@@ -9,8 +11,9 @@ public static class BanAnQueryExtensions
     // Chỉ xây dựng biểu thức LINQ; chưa tải dữ liệu về bộ nhớ.
     public static IQueryable<BanAn> TraCuu(this IQueryable<BanAn> query, BanAnIndexViewModel model)
     {
-        if (!string.IsNullOrWhiteSpace(model.Keyword))
-            query = query.Where(x => x.TenBan.Contains(model.Keyword) || x.ViTri.Contains(model.Keyword));
+        var keyword = model.Keyword?.Trim();
+        if (!string.IsNullOrWhiteSpace(keyword))
+            query = query.Where(x => x.TenBan.Contains(keyword) || x.ViTri.Contains(keyword));
         if (model.MaLoaiBan.HasValue)
             query = query.Where(x => x.MaLoaiBan == model.MaLoaiBan);
         if (model.SoChoNgoi.HasValue)

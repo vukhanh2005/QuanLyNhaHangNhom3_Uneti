@@ -1,7 +1,9 @@
-
-
+// Họ và tên: Vi Thái Học
+// Mã sinh viên: 23103100054
+// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Filters;
 using QuanLyNhaHang.Queries;
 using QuanLyNhaHang.ViewModels;
@@ -18,6 +20,7 @@ bool Valid(BanAnFormViewModel model) =>
     Validator.TryValidateObject(model, new ValidationContext(model), new List<ValidationResult>(), true);
 BanAnFormViewModel Form() => new() { TenBan = "Bàn 01", MaLoaiBan = 1, ViTri = "Tầng 1" };
 Check(Valid(Form()), "Valid form");
+Check(BanAnTrangThai.SanSang == "Sẵn sàng", "Shared ready status contract");
 var f = Form(); f.TenBan = "   "; Check(!Valid(f), "Whitespace name");
 f = Form(); f.TenBan = new string('a', 101); Check(!Valid(f), "Name length");
 f = Form(); f.SoChoNgoi = 0; Check(!Valid(f), "Zero seats");
@@ -26,6 +29,16 @@ f = Form(); f.MaLoaiBan = 0; Check(!Valid(f), "Missing table type");
 f = Form(); f.TrangThai = "invalid"; Check(!Valid(f), "Invalid status");
 f = Form(); f.ViTri = ""; Check(!Valid(f), "Missing location");
 f = Form(); f.MoTa = null; Check(Valid(f), "Optional description");
+f = Form(); f.TenBan = "  Bàn 01  "; f.ViTri = " Tầng 1 "; f.MoTa = "   ";
+BanAnFormLogic.Normalize(f);
+Check(f.TenBan == "Bàn 01" && f.ViTri == "Tầng 1" && f.MoTa == null, "Normalize form text");
+var target = new BanAn { MaBan = 42 };
+BanAnFormLogic.ApplyTo(f, target);
+Check(target.MaBan == 42 && target.TenBan == f.TenBan && target.SoChoNgoi == f.SoChoNgoi,
+    "Apply form without changing primary key");
+var editForm = BanAnFormLogic.FromEntity(target);
+Check(editForm.TenBan == target.TenBan && editForm.MaLoaiBan == target.MaLoaiBan
+    && editForm.ViTri == target.ViTri && editForm.TrangThai == target.TrangThai, "Load edit form");
 
 var rows = Enumerable.Range(1, 30).Select(i => new BanAn
 {
@@ -42,6 +55,8 @@ var query = rows.TraCuu(filter);
 Check(query.Count() == 20, "Combined search and three filters");
 Check(query.Skip(5).Take(5).Select(x => x.MaBan).SequenceEqual(new[] {15,14,13,12,11}), "Combined sort and second page");
 Check(rows.TraCuu(new() { Keyword = "Ngoài trời" }).Count() == 10, "Location search");
+Check(rows.TraCuu(new() { Keyword = "  Ngoài trời  " }).Count() == 10, "Trim search keyword");
+Check(rows.TraCuu(new() { Keyword = "   " }).Count() == 30, "Blank search retains all rows");
 Check(!rows.TraCuu(new() { Keyword = "missing" }).Any(), "No search results");
 Check(rows.TraCuu(new() { SortOrder = "name_asc" }).First().MaBan == 1, "Ascending name");
 Check(rows.TraCuu(new() { SortOrder = "name_desc" }).First().MaBan == 30, "Descending name");
@@ -49,6 +64,15 @@ Check(rows.TraCuu(new() { SortOrder = "seat_asc" }).First().SoChoNgoi == 4, "Asc
 Check(rows.TraCuu(new() { SortOrder = "seat_desc" }).First().SoChoNgoi == 8, "Descending seats");
 Check(new BanAnIndexViewModel { TotalCount = 0 }.TotalPages == 1, "Empty pagination");
 Check(new BanAnIndexViewModel { TotalCount = 21 }.TotalPages == 5, "Partial last page");
+// ToQueryString kiểm tra EF dịch LINQ thành SQL Server, không kết nối database.
+using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+    .UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=Module2TranslationOnly;Trusted_Connection=True")
+    .Options);
+var sql = db.BanAns.TraCuu(filter).Skip(5).Take(5).ToQueryString();
+Check(sql.Contains("WHERE") && sql.Contains("ORDER BY") && sql.Contains("OFFSET")
+    && sql.Contains("FETCH NEXT"), "SQL Server translates combined search filter sort pagination");
+var editSql = db.BanAns.Where(x => x.TenBan == "Bàn 01" && x.MaBan != 42).ToQueryString();
+Check(editSql.Contains("<>") && editSql.Contains("42"), "SQL excludes edited record from duplicate check");
 var session = new MemorySession();
 Check(!Module2AdminAttribute.IsAdmin(session), "Anonymous denied");
 session.SetInt32("MaTaiKhoan", 1); session.SetString("VaiTro", "User");

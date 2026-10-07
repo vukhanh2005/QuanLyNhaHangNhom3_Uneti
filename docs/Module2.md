@@ -16,6 +16,8 @@ Trạng thái triển khai: CHƯA HOÀN THÀNH.
 Repository chưa có LoaiBan và đăng nhập chưa ghi Session.
 Chưa tạo entity thay thế vì yêu cầu của chủ dự án không cho phép tự tạo LoaiBan.
 Chưa tạo migration hoặc thay đổi database.
+Phạm vi đã được người dùng xác nhận: chỉ làm phần không cần LoaiBan.
+Không tạo entity LoaiBan hoặc Controller CRUD bỏ qua kiểm tra khóa ngoại.
 
 ## 2. Cấu trúc
 
@@ -24,6 +26,8 @@ Chưa tạo migration hoặc thay đổi database.
 - ViewModels/BanAnFormViewModel.cs
 - ViewModels/BanAnIndexViewModel.cs
 - Queries/BanAnQueryExtensions.cs
+- Queries/BanAnPagination.cs
+- Queries/BanAnFormLogic.cs
 - Filters/Module2AdminAttribute.cs
 - Views/BanAn/_Form.cshtml, Create.cshtml, Edit.cshtml
 - scripts/Test-Module2.ps1, scripts/Module2Checks.cs.txt
@@ -54,6 +58,13 @@ PageSize = 5; danh sách trống quy ước trang 1/1.
 ## 5. CRUD và phân quyền
 
 Controller chưa triển khai vì cần LoaiBan chính thức.
+BanAnFormLogic đã cung cấp Normalize, ValidateNameAsync, ApplyTo và FromEntity.
+ValidateNameAsync dùng AnyAsync, loại trừ currentId khi sửa và ghi lỗi vào ModelState.
+ApplyTo chỉ cập nhật trường được phép, giữ nguyên MaBan. Đây là hàm hỗ trợ,
+chưa được gọi qua endpoint CRUD. Controller tương lai phải gọi validation đầy đủ,
+kiểm tra LoaiBan tồn tại và ModelState.IsValid trước khi ApplyTo/SaveChangesAsync.
+AnyAsync không thay thế unique index: khi tích hợp migration cần thêm ràng buộc
+tên duy nhất và xử lý lỗi lưu đồng thời.
 Dự kiến GET/POST Create, Edit, Delete có Module2Admin và POST có anti-forgery.
 Mã bàn lấy từ route và dùng tìm entity hiện có; không cập nhật khóa chính.
 ModelState invalid phải tải lại danh sách loại bàn.
@@ -67,8 +78,8 @@ Không có endpoint giả lập đăng nhập hoặc tự cấp quyền Admin.
 
 ## 6. Search
 
-TraCuu dùng Contains với TenBan hoặc ViTri.
-Controller cần Trim từ khóa trước khi gọi. Không tải toàn bộ database.
+TraCuu dùng Contains với TenBan hoặc ViTri và tự Trim từ khóa trước khi lọc.
+Không tải toàn bộ database.
 
 ## 7. Filter
 
@@ -82,10 +93,10 @@ ThenBy(MaBan) đảm bảo thứ tự ổn định giữa các trang khi số ch
 
 ## 9. Pagination
 
-Controller sẽ Include(LoaiBan), AsNoTracking, gọi TraCuu,
-CountAsync, giới hạn page trong 1..TotalPages,
-Skip((page - 1) * 5), Take(5), cuối cùng ToListAsync.
-Phần thực thi EF và giữ query string chưa hoàn thành.
+BanAnPagination.LoadPageAsync đã thực hiện AsNoTracking, TraCuu,
+CountAsync, giới hạn page trong 1..TotalPages, Skip/Take rồi ToListAsync.
+Controller sau này truyền query Include(LoaiBan) vào hàm này.
+Chưa tích hợp Controller/View hoặc kiểm thử SQL Server; giữ query string trên giao diện chưa hoàn thành.
 
 ## 10. Index
 
@@ -105,8 +116,8 @@ Details/Delete chưa triển khai, chờ quan hệ LoaiBan.
 FILE DÙNG CHUNG – CẦN TRAO ĐỔI VỚI NHÓM TRƯỚC KHI MERGE.
 
 Không tạo migration từ model thiếu entity đã có trong snapshot:
-snapshot hiện có TaiKhoan nhưng AppDbContext chưa đăng ký TaiKhoan.
-Nếu bỏ qua, migration có thể sinh DropTable(TaiKhoans).
+Snapshot hiện có TaiKhoan và AppDbContext đã đăng ký TaiKhoans.
+Phải giữ đăng ký này để migration không vô tình sinh DropTable(TaiKhoans).
 Phải thống nhất model dùng chung, lấy migration mới nhất của nhóm,
 kiểm tra Up/Down trước khi update database.
 
@@ -131,9 +142,12 @@ Chạy kiểm tra phần độc lập:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-Module2.ps1
 ```
-23 kiểm tra đã đạt: Data Annotation, query kết hợp trên dữ liệu bộ nhớ,
+31 kiểm tra đã đạt: Data Annotation, trạng thái Sẵn sàng, từ khóa có khoảng trắng,
+query kết hợp trên dữ liệu bộ nhớ,
 bốn kiểu sort, biên phân trang và hợp đồng Session.
-Đây chưa phải kiểm thử tích hợp EF/SQL Server hoặc CRUD HTTP.
+Đã kiểm tra chuẩn hóa form, giữ mã bàn khi cập nhật và dịch LINQ sang SQL Server
+bằng ToQueryString (WHERE/ORDER BY/OFFSET/FETCH NEXT).
+Không kết nối database; chưa kiểm thử thực thi LoadPageAsync, AnyAsync hoặc CRUD HTTP.
 
 Checklist tích hợp còn cần thực hiện:
 1. Thêm hợp lệ: lưu và về Index.
@@ -176,8 +190,9 @@ tên toàn khoảng trắng, page âm/quá lớn, hai yêu cầu tạo trùng đ
 
 ## 15. Git
 
-Làm trên Module2-VTH, không sửa main, chưa commit/push.
-Điền mã sinh viên thật trước khi commit:
+Làm trên Module2-VTH, không sửa main. Các phiên bản trước đã commit/push;
+những thay đổi của lượt triển khai hiện tại chưa commit/push.
+Mã sinh viên: 23103100054. Gợi ý chia commit theo phần việc:
 - [MaSV] [BanAn] Them validation va trang thai ban
 - [MaSV] [BanAn] Them ViewModel va truy van tra cuu
 - [MaSV] [BanAn] Them phan quyen va giao dien form

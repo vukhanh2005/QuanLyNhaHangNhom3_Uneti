@@ -16,6 +16,11 @@ $projectText = @'
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <Using Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.4" />
+    <Compile Include="../../AppDbContext.cs" />
+    <Compile Include="../../Models/TaiKhoan.cs" />
+    <Compile Include="../../Queries/BanAnFormLogic.cs" />
+    <Compile Include="../../Queries/BanAnPagination.cs" />
     <Compile Include="../../Models/BanAn.cs" />
     <Compile Include="../../Models/BanAnTrangThai.cs" />
     <Compile Include="../../ViewModels/BanAnFormViewModel.cs" />
