@@ -40,11 +40,24 @@ namespace QuanLyNhaHang.Controllers.Module01
         [HttpPost]
         public async Task<IActionResult> Register(TaiKhoanRequest request)
         {
-            System.Console.WriteLine(
-                $"Username: {request.username}\n Password: {request.password} \n Confirm Password: {request.confirmPassword}"+
-                $"Name: {request.hoTen}\n Email: {request.email}"
-            );
-            return View("Test");
+            // System.Console.WriteLine(
+            //     $"Username: {request.username}\n Password: {request.password} \n Confirm Password: {request.confirmPassword}"+
+            //     $"Name: {request.hoTen}\n Email: {request.email}"
+            // );
+            TaiKhoanResponse response = await service.Register(request);
+
+            if (response.message.StartsWith("[SUCCESS]"))
+            {
+                // System.Console.WriteLine($"Dang ki thanh cong tai khaon :{response.username}-{response.password}");
+                ViewBag.SuccessMessage = response.message.Substring(6);
+                return View("Register");
+            }
+            else
+            {
+                //System.Console.WriteLine($"Dang ki that bai: {response.message}");
+                ViewBag.FailMessage = response.message;
+                return View("Register");
+            }
         }
     }
 }

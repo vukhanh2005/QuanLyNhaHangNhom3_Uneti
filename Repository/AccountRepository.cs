@@ -33,9 +33,11 @@ namespace QuanLyNhaHang.Repository
         {
             return null;
         }
-        public async Task themTaiKhoan(TaiKhoan account)
+        public async Task<TaiKhoan> themTaiKhoan(TaiKhoan account)
         {
-            this.context.Add(account);
+            context.Add(account);
+            await context.SaveChangesAsync();
+            return account;
         }
     }
 }
