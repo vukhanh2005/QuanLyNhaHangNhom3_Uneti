@@ -2,11 +2,11 @@ using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
 
-namespace QuanLyNhaHang.Service
+namespace QuanLyNhaHang.Service.Implement
 {
     public class LoginService : ILoginService
     {
-        AccountRepository repository = null;
+        AccountRepository repository;
         public LoginService(AccountRepository repository)
         {
             this.repository = repository;

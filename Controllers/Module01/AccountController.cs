@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Repository;
 using QuanLyNhaHang.Service;
+using QuanLyNhaHang.Service.Implement;
 
 namespace QuanLyNhaHang.Controllers.Module01
 {
     public class AccountController : Controller
     {
-        LoginService service = null;
+        LoginService service;
         public AccountController(AccountRepository repository)
         {
             this.service = new LoginService(repository);
@@ -65,6 +66,14 @@ namespace QuanLyNhaHang.Controllers.Module01
                 ViewBag.FailMessage = response.message;
                 return View("Register");
             }
+        }
+        public IActionResult DangXuat()
+        {
+            //Xoa session hien tai
+            HttpContext.Session.Remove("MaTaiKhoan");
+            HttpContext.Session.Remove("HoTen");
+            HttpContext.Session.Remove("VaiTro");
+            return RedirectToAction("Login", "Account");
         }
     }
 }
