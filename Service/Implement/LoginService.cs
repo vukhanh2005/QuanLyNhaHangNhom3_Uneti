@@ -2,11 +2,11 @@ using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
 
-namespace QuanLyNhaHang.Service
+namespace QuanLyNhaHang.Service.Implement
 {
     public class LoginService : ILoginService
     {
-        AccountRepository repository = null;
+        AccountRepository repository;
         public LoginService(AccountRepository repository)
         {
             this.repository = repository;
@@ -81,7 +81,7 @@ namespace QuanLyNhaHang.Service
                 }
                 else
                 {
-                    string message = "[FAIL] Mật khẩu không chính xác";
+                    string message = "Mật khẩu không chính xác";
                     TaiKhoanResponse response = new TaiKhoanResponse(message);
                     return response;
                 }
@@ -89,7 +89,7 @@ namespace QuanLyNhaHang.Service
             else
             {
                 //Acc khong ton tai
-                string message = "[FAIL] Tài khoản không có trong hệ thống";
+                string message = "Tài khoản không có trong hệ thống";
                 TaiKhoanResponse response = new TaiKhoanResponse(message);
                 return response;
             }

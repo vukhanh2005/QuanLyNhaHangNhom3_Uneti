@@ -3,7 +3,11 @@ using QuanLyNhaHangNhom3_Uneti.Models;
 using QuanLyNhaHang.Models;
 
 public class AppDbContext : DbContext{
-    public DbSet<TaiKhoan> TaiKhoans {get; set;}
+    //______________________________NVK EDIT______________________________
+    /*|*/public DbSet<TaiKhoan> TaiKhoans {get; set;}
+    /*|*/public DbSet<LoaiBan> LoaiBans {get; set;}
+    /*|*/
+    //|--------------------------------------------------------------------
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
