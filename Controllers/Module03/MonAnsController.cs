@@ -11,6 +11,7 @@ public class MonAnController : Controller
     {
         _context = context;
     }
+    
 
     // GET: MONANS
     public async Task<IActionResult> Index()    
@@ -42,21 +43,39 @@ public class MonAnController : Controller
         return View();
     }
 
+
     // POST: MONANS/Create
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("MaMon,TenMon,LoaiMon,DonGia,MoTa,TrangThai")] MonAn monan)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(MonAn monan)
+{
+    if (!ModelState.IsValid)
     {
-        if (ModelState.IsValid)
+        Console.WriteLine("=== DU LIEU KHONG HOP LE ===");
+
+        foreach (var item in ModelState)
         {
-            _context.Add(monan);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            foreach (var error in item.Value.Errors)
+            {
+                Console.WriteLine($"{item.Key}: {error.ErrorMessage}");
+            }
         }
-        return View(monan);
+
+        TempData["Error"] = "Dữ liệu không hợp lệ!";
+        return RedirectToAction("Index", "MonAn");
     }
+
+    Console.WriteLine("=== DU LIEU HOP LE ===");
+
+    _context.MonAn.Add(monan);
+    await _context.SaveChangesAsync();
+
+    Console.WriteLine("=== THEM MON THANH CONG ===");
+
+    return RedirectToAction("Index", "MonAn");
+}
 
     // GET: MONANS/Edit/5
     public async Task<IActionResult> Edit(int? mamon)
@@ -83,7 +102,8 @@ public class MonAnController : Controller
     {
         if (mamon != monan.MaMon)
         {
-            return NotFound();
+            TempData["Error"] = "Mã món ăn không hợp lệ!";
+            return RedirectToAction(nameof(Index));
         }
 
         if (ModelState.IsValid)
@@ -92,21 +112,19 @@ public class MonAnController : Controller
             {
                 _context.Update(monan);
                 await _context.SaveChangesAsync();
+                TempData["Message"] = "Cập nhật món ăn thành công!";
+
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MonAnExists(monan.MaMon))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return RedirectToAction(nameof(Index));
+               TempData["Error"] = "Có lỗi xảy ra khi cập nhật món ăn!";
+            } 
         }
-        return View(monan);
+        else
+        {
+            TempData["Error"] = "Dữ liệu không hợp lệ!";
+        }
+        return RedirectToAction(nameof(Index));
     }
 
     // GET: MONANS/Delete/5
@@ -134,8 +152,17 @@ public class MonAnController : Controller
     {
         var monan = await _context.MonAn.FindAsync(mamon);
         if (monan != null)
-        {
+        {   
+            try{
             _context.MonAn.Remove(monan);
+            TempData["Message"] = "Xóa món ăn thành công!";
+        }catch(Exception ex){
+            TempData["Error"] = "Có lỗi xảy ra khi xóa món ăn!";
+        }
+        }
+        else
+        {
+            TempData["Error"] = "Món ăn không tồn tại!";
         }
 
         await _context.SaveChangesAsync();
@@ -145,5 +172,10 @@ public class MonAnController : Controller
     private bool MonAnExists(int? mamon)
     {
         return _context.MonAn.Any(e => e.MaMon == mamon);
+    }
+    public async Task<IActionResult> ThucDon()
+    {
+        var monAnList = await _context.MonAn.ToListAsync();
+        return View(monAnList);
     }
 }

@@ -1,0 +1,59 @@
+@model IEnumerable<QuanLyNhaHang.Models.MonAn>
+
+@{
+    ViewData["Title"] = "ThucDon";
+    var stt = 0;
+}
+
+
+<div class="container mt-4 mb-5">
+
+    <h2 class="text-center mb-2">THỰC ĐƠN NHÀ HÀNG</h2>
+
+    <p class="text-center text-muted mb-4">
+        Danh sách các món ăn đang phục vụ
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle text-center">
+
+            <thead class="text-center">
+                <tr>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 15%;">Tên món ăn</th>
+                    <th style="width: 15%;">Loại món</th>
+                    <th style="width: 15%;">Đơn giá</th>
+                    <th style="width: 40%;">Mô tả</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if ((int)item.TrangThai == 1)
+                    {
+                        stt++;
+
+                        <tr>
+                            <td class="text-center">@stt</td>
+
+                            <td class="fw-semibold">
+                                @item.TenMon
+                            </td>
+
+                            <td>@item.LoaiMon</td>
+
+                            <td class="text-danger fw-bold">
+                                @item.DonGia.ToString("N0") đ
+                            </td>
+
+                            <td>@item.MoTa</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</div>

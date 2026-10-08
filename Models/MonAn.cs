@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -21,12 +22,11 @@ namespace QuanLyNhaHang.Models
         [Required]
         [StringLength(50)]
         public string LoaiMon { get; set; }
-
+        [Precision(18, 2)]
         [Range(0.01, double.MaxValue, ErrorMessage = "DonGia must be greater than 0.")]
         public decimal DonGia { get; set; }
 
         public string? MoTa { get; set; }
-        public string? HinhAnh { get; set; }
 
         [Required]
         public TrangThaiMonAn TrangThai { get; set; }
