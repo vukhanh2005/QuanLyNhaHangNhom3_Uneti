@@ -9,6 +9,12 @@ public class AppDbContext : DbContext
 
     public DbSet<MonAn> MonAns { get; set; }
 
+    public DbSet<LoaiBan> LoaiBans { get; set; }
+
+    public DbSet<KhachHang> KhachHangs { get; set; }
+
+    public DbSet<PhieuDatBan> PhieuDatBans { get; set; }
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
