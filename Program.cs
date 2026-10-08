@@ -1,3 +1,4 @@
+using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
@@ -16,7 +17,7 @@ namespace QuanLyNhaHang
             builder.Services.AddScoped<AccountRepository>();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -27,20 +28,20 @@ namespace QuanLyNhaHang
                 );
             });
             var app = builder.Build();
-            app.UseSession();
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseRouting();
+            app.UseSession();
 
             app.UseAuthorization();
 
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Account}/{action=Login}/{id?}")
+                pattern: "{controller=TrangChu}/{action=Index}/{id?}")
                 .WithStaticAssets();
             app.Run();
         }

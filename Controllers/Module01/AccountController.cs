@@ -1,13 +1,15 @@
+using Azure;
 using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Repository;
 using QuanLyNhaHang.Service;
+using QuanLyNhaHang.Service.Implement;
 
 namespace QuanLyNhaHang.Controllers.Module01
 {
     public class AccountController : Controller
     {
-        LoginService service = null;
+        LoginService service;
         public AccountController(AccountRepository repository)
         {
             this.service = new LoginService(repository);
@@ -24,11 +26,17 @@ namespace QuanLyNhaHang.Controllers.Module01
     
             if (response.message.StartsWith("[SUCCESS]"))
             {
-                return RedirectToAction("Index", "TrangChu");
+                //Luu vao session
+                HttpContext.Session.SetInt32("MaTaiKhoan", response.maTaiKhoan);
+                HttpContext.Session.SetString("HoTen", response.hoTen);
+                HttpContext.Session.SetString("VaiTro", response.vaiTro);
+                ViewBag.SuccessMessage = response.message.Substring(7);
+                return View("Login");
             }
             else
             {
                 ViewData["Message"] = response.message.Substring(7);
+                ViewBag.FailMessage = response.message;
                 return View("Login");
             }
         }
@@ -49,7 +57,7 @@ namespace QuanLyNhaHang.Controllers.Module01
             if (response.message.StartsWith("[SUCCESS]"))
             {
                 // System.Console.WriteLine($"Dang ki thanh cong tai khaon :{response.username}-{response.password}");
-                ViewBag.SuccessMessage = response.message.Substring(6);
+                ViewBag.SuccessMessage = response.message.Substring(9);
                 return View("Register");
             }
             else
@@ -58,6 +66,14 @@ namespace QuanLyNhaHang.Controllers.Module01
                 ViewBag.FailMessage = response.message;
                 return View("Register");
             }
+        }
+        public IActionResult DangXuat()
+        {
+            //Xoa session hien tai
+            HttpContext.Session.Remove("MaTaiKhoan");
+            HttpContext.Session.Remove("HoTen");
+            HttpContext.Session.Remove("VaiTro");
+            return RedirectToAction("Login", "Account");
         }
     }
 }
