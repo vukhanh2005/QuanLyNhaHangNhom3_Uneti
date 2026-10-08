@@ -27,5 +27,11 @@ namespace QuanLyNhaHang.Models
 
         [Required]
         public string TrangThai { get; set; } = "Sẵn sàng";
+        
+        public LoaiBan? LoaiBan { get; set; }
+
+
+        public ICollection<PhieuDatBan> PhieuDatBans { get; set; }
+        = new List<PhieuDatBan>();
     }
 }
