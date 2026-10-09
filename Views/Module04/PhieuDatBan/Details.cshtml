@@ -1,0 +1,161 @@
+
+@model QuanLyNhaHang.Models.PhieuDatBan
+
+@{
+    ViewData["Title"] = "Chi tiết phiếu đặt bàn";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Chi tiết phiếu đặt bàn</h2>
+            <p class="text-muted mb-0">
+                Thông tin đầy đủ của phiếu đặt bàn khách hàng
+            </p>
+        </div>
+
+        <a asp-controller="PhieuDatBan"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                Phiếu đặt bàn #@Model.MaPhieuDatBan
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Mã phiếu</label>
+                    <div class="fw-semibold">
+                        @Model.MaPhieuDatBan
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Trạng thái</label>
+                    <div>
+                        @switch (Model.TrangThai)
+                        {
+                            case "Chờ xác nhận":
+                                <span class="badge bg-warning text-dark">
+                                    Chờ xác nhận
+                                </span>
+                                break;
+
+                            case "Đã xác nhận":
+                                <span class="badge bg-success">
+                                    Đã xác nhận
+                                </span>
+                                break;
+
+                            case "Đã hủy":
+                                <span class="badge bg-danger">
+                                    Đã hủy
+                                </span>
+                                break;
+
+                            case "Đã sử dụng":
+                                <span class="badge bg-secondary">
+                                    Đã sử dụng
+                                </span>
+                                break;
+
+                            default:
+                                <span class="badge bg-light text-dark">
+                                    @Model.TrangThai
+                                </span>
+                                break;
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Tên khách hàng</label>
+                    <div class="fw-semibold">
+                        @(Model.KhachHang?.HoTen ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Số điện thoại</label>
+                    <div class="fw-semibold">
+                        @(Model.KhachHang?.SoDienThoai ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Email</label>
+                    <div class="fw-semibold">
+                        @(Model.KhachHang?.Email ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Tên bàn</label>
+                    <div class="fw-semibold">
+                        @(Model.BanAn?.TenBan ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Loại bàn</label>
+                    <div class="fw-semibold">
+                        @(Model.BanAn?.LoaiBan?.TenLoaiBan ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Số chỗ ngồi</label>
+                    <div class="fw-semibold">
+                        @(Model.BanAn?.SoChoNgoi.ToString() ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Ngày giờ đặt</label>
+                    <div class="fw-semibold">
+                        @Model.NgayGioDat.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Số người</label>
+                    <div class="fw-semibold">
+                        @Model.SoNguoi người
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted mb-1">Ngày tạo phiếu</label>
+                    <div class="fw-semibold">
+                        @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="text-muted mb-1">Ghi chú</label>
+                    <div class="border rounded p-3">
+                        @(string.IsNullOrWhiteSpace(Model.GhiChu)
+                            ? "Không có ghi chú"
+                            : Model.GhiChu)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white text-end py-3">
+            <a asp-controller="PhieuDatBan"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Đóng
+            </a>
+        </div>
+    </div>
+</div>
+

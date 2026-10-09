@@ -104,13 +104,14 @@ ViewData["Title"] = "Quản lý phiếu đặt bàn";
                         <th>Số người</th>
                         <th>Trạng thái</th>
                         <th>Ghi chú</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.DanhSachPhieuDatBan.Count == 0)
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="9" class="text-center text-muted py-4">
                                 Không tìm thấy phiếu đặt bàn phù hợp.
                             </td>
                         </tr>
@@ -147,6 +148,14 @@ ViewData["Title"] = "Quản lý phiếu đặt bàn";
                                     }
                                 </td>
                                 <td>@(string.IsNullOrWhiteSpace(phieu.GhiChu) ? "—" : phieu.GhiChu)</td>
+                                <td>
+    <a asp-controller="PhieuDatBan"
+       asp-action="Details"
+       asp-route-id="@phieu.MaPhieuDatBan"
+       class="btn btn-sm btn-outline-primary">
+        Chi tiết
+    </a>
+</td>
                             </tr>
                         }
                     }
