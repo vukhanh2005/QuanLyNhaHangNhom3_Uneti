@@ -1,81 +1,101 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.ViewModels.Module04;
 
 namespace QuanLyNhaHang.Controllers.Module04
 {
-public class PhieuDatBanController : Controller
-{
-private readonly AppDbContext _context;
-
-
-    public PhieuDatBanController(AppDbContext context)
+    public class PhieuDatBanController : Controller
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    
-    public async Task<IActionResult> Index(
-        string? tenKhachHang,
-        string? tenBan,
-        string? trangThai,
-        DateTime? ngaySuDung)
-    {
-        var query = _context.PhieuDatBans
-            .Include(p => p.KhachHang)
-            .Include(p => p.BanAn)
-            .AsQueryable();
-
-        
-        if (!string.IsNullOrWhiteSpace(tenKhachHang))
+        public PhieuDatBanController(AppDbContext context)
         {
-            query = query.Where(p =>
-                p.KhachHang != null &&
-                p.KhachHang.HoTen.Contains(tenKhachHang));
-        }
-
-       
-        if (!string.IsNullOrWhiteSpace(tenBan))
-        {
-            query = query.Where(p =>
-                p.BanAn != null &&
-                p.BanAn.TenBan.Contains(tenBan));
-        }
-
-     
-        if (!string.IsNullOrWhiteSpace(trangThai))
-        {
-            query = query.Where(p => p.TrangThai == trangThai);
+            _context = context;
         }
 
         
-        if (ngaySuDung.HasValue)
+        public async Task<IActionResult> Index(
+            string? tenKhachHang,
+            string? tenBan,
+            string? trangThai,
+            DateTime? ngaySuDung)
         {
-            var ngay = ngaySuDung.Value.Date;
-            var ngayTiepTheo = ngay.AddDays(1);
+            var query = _context.PhieuDatBans
+                .Include(p => p.KhachHang)
+                .Include(p => p.BanAn)
+                .AsQueryable();
 
-            query = query.Where(p =>
-                p.NgayGioDat >= ngay &&
-                p.NgayGioDat < ngayTiepTheo);
+            
+            if (!string.IsNullOrWhiteSpace(tenKhachHang))
+            {
+                query = query.Where(p =>
+                    p.KhachHang != null &&
+                    p.KhachHang.HoTen.Contains(tenKhachHang));
+            }
+
+            
+            if (!string.IsNullOrWhiteSpace(tenBan))
+            {
+                query = query.Where(p =>
+                    p.BanAn != null &&
+                    p.BanAn.TenBan.Contains(tenBan));
+            }
+
+          
+            if (!string.IsNullOrWhiteSpace(trangThai))
+            {
+                query = query.Where(p =>
+                    p.TrangThai == trangThai);
+            }
+
+            
+            if (ngaySuDung.HasValue)
+            {
+                var ngay = ngaySuDung.Value.Date;
+                var ngayTiepTheo = ngay.AddDays(1);
+
+                query = query.Where(p =>
+                    p.NgayGioDat >= ngay &&
+                    p.NgayGioDat < ngayTiepTheo);
+            }
+
+            var model = new PhieuDatBanViewModel
+            {
+                DanhSachPhieuDatBan = await query
+                    .OrderByDescending(p => p.NgayGioDat)
+                    .ToListAsync(),
+
+                TenKhachHang = tenKhachHang,
+                TenBan = tenBan,
+                TrangThai = trangThai,
+                NgaySuDung = ngaySuDung
+            };
+
+            return View(
+                "~/Views/Module04/PhieuDatBan/Index.cshtml",
+                model);
         }
 
-        var model = new PhieuDatBanViewModel
+        
+        public async Task<IActionResult> Details(int id)
         {
-            DanhSachPhieuDatBan = await query
-                .OrderByDescending(p => p.NgayGioDat)
-                .ToListAsync(),
+            var phieu = await _context.PhieuDatBans
+                .Include(p => p.KhachHang)
+                .Include(p => p.BanAn)
+                .ThenInclude(b => b!.LoaiBan)
+                .FirstOrDefaultAsync(
+                    p => p.MaPhieuDatBan == id);
 
-            TenKhachHang = tenKhachHang,
-            TenBan = tenBan,
-            TrangThai = trangThai,
-            NgaySuDung = ngaySuDung
-        };
+            if (phieu == null)
+            {
+                return NotFound();
+            }
 
-        return View(
-            "~/Views/Module04/PhieuDatBan/Index.cshtml",
-            model);
+            return View(
+                "~/Views/Module04/PhieuDatBan/Details.cshtml",
+                phieu);
+        }
     }
 }
 
-
-}
