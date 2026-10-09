@@ -1,0 +1,160 @@
+@model QuanLyNhaHang.ViewModels.Module04.PhieuDatBanViewModel
+
+@{
+ViewData["Title"] = "Quản lý phiếu đặt bàn";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Quản lý phiếu đặt bàn</h2>
+            <p class="text-muted mb-0">Danh sách và tra cứu phiếu đặt bàn của khách hàng</p>
+        </div>
+        <span class="badge bg-primary fs-6">
+            Tổng: @Model.DanhSachPhieuDatBan.Count phiếu
+        </span>
+    </div>
+
+```
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Tìm kiếm và lọc phiếu</h5>
+    </div>
+    <div class="card-body">
+        <form asp-controller="PhieuDatBan" asp-action="Index" method="get">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Tên khách hàng</label>
+                    <input type="text"
+                           name="tenKhachHang"
+                           value="@Model.TenKhachHang"
+                           class="form-control"
+                           placeholder="Nhập tên khách hàng" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Tên bàn</label>
+                    <input type="text"
+                           name="tenBan"
+                           value="@Model.TenBan"
+                           class="form-control"
+                           placeholder="Nhập tên bàn" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="trangThai" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="Chờ xác nhận"
+                                selected="@(Model.TrangThai == "Chờ xác nhận")">
+                            Chờ xác nhận
+                        </option>
+                        <option value="Đã xác nhận"
+                                selected="@(Model.TrangThai == "Đã xác nhận")">
+                            Đã xác nhận
+                        </option>
+                        <option value="Đã hủy"
+                                selected="@(Model.TrangThai == "Đã hủy")">
+                            Đã hủy
+                        </option>
+                        <option value="Đã sử dụng"
+                                selected="@(Model.TrangThai == "Đã sử dụng")">
+                            Đã sử dụng
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Ngày sử dụng</label>
+                    <input type="date"
+                           name="ngaySuDung"
+                           value="@(Model.NgaySuDung?.ToString("yyyy-MM-dd"))"
+                           class="form-control" />
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Tìm kiếm
+                </button>
+                <a asp-controller="PhieuDatBan"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Danh sách phiếu đặt bàn</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Khách hàng</th>
+                        <th>Số điện thoại</th>
+                        <th>Tên bàn</th>
+                        <th>Ngày giờ đặt</th>
+                        <th>Số người</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachPhieuDatBan.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                Không tìm thấy phiếu đặt bàn phù hợp.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var phieu in Model.DanhSachPhieuDatBan)
+                        {
+                            <tr>
+                                <td>@phieu.MaPhieuDatBan</td>
+                                <td>@(phieu.KhachHang?.HoTen ?? "Chưa có thông tin")</td>
+                                <td>@(phieu.KhachHang?.SoDienThoai ?? "—")</td>
+                                <td>@(phieu.BanAn?.TenBan ?? "Chưa có thông tin")</td>
+                                <td>@phieu.NgayGioDat.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@phieu.SoNguoi</td>
+                                <td>
+                                    @switch (phieu.TrangThai)
+                                    {
+                                        case "Chờ xác nhận":
+                                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                            break;
+                                        case "Đã xác nhận":
+                                            <span class="badge bg-success">Đã xác nhận</span>
+                                            break;
+                                        case "Đã hủy":
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                            break;
+                                        case "Đã sử dụng":
+                                            <span class="badge bg-secondary">Đã sử dụng</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-light text-dark">@phieu.TrangThai</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(phieu.GhiChu) ? "—" : phieu.GhiChu)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+```
+
+</div>
