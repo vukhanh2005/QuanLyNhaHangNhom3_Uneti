@@ -1,0 +1,62 @@
+@using Microsoft.AspNetCore.Http
+@{
+    var signedIn = Context.Session.GetInt32("MaTaiKhoan") != null;
+    var customerName = Context.Session.GetString("HoTen") ?? "Khách hàng";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#213c32" />
+    <title>@(ViewData["Title"] ?? "Trang chủ") - Nhà hàng</title>
+    <link rel="stylesheet" href="~/css/client.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Đến nội dung chính</a>
+    <div class="announcement">Một bàn ăn ấm cúng. Một cuộc hẹn trọn vẹn.</div>
+    <header class="site-header">
+        <div class="shell header-inner">
+            <a class="brand" asp-controller="TrangChu" asp-action="Index" aria-label="Nhà hàng - Trang chủ">
+                <span class="brand-mark" aria-hidden="true">N</span>
+                <span>NHÀ HÀNG<small>GẮN KẾT QUA TỪNG BỮA ĂN</small></span>
+            </a>
+            <details class="navigation">
+                <summary>Menu <span aria-hidden="true">☰</span></summary>
+                <nav aria-label="Điều hướng khách hàng">
+                    <a asp-controller="TrangChu" asp-action="Index">Trang chủ</a>
+                    <a asp-controller="TrangChu" asp-action="Index" asp-fragment="thuc-don">Thực đơn</a>
+                    <a asp-controller="TrangChu" asp-action="Index" asp-fragment="ban-an">Bàn ăn</a>
+                    <a asp-controller="TrangChu" asp-action="Index" asp-fragment="phieu-dat-ban">Phiếu đặt bàn</a>
+                    <a asp-controller="TrangChu" asp-action="Index" asp-fragment="lich-su">Lịch sử</a>
+                </nav>
+            </details>
+            <div class="account-links">
+                @if (signedIn)
+                {
+                    <a class="account-name" asp-controller="TrangChu" asp-action="Index" asp-fragment="tai-khoan" title="@customerName">@customerName</a>
+                    <a class="text-link" asp-controller="Account" asp-action="DangXuat">Đăng xuất</a>
+                }
+                else
+                {
+                    <a class="text-link" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                    <a class="button button-small" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                }
+            </div>
+        </div>
+    </header>
+    <main id="main-content" class="shell main-content" tabindex="-1">
+        @RenderBody()
+    </main>
+    <footer class="site-footer">
+        <div class="shell footer-inner">
+            <div><strong>NHÀ HÀNG</strong><p>Chọn món yêu thích, tìm bàn phù hợp cho cuộc hẹn của bạn.</p></div>
+            <a asp-controller="TrangChu" asp-action="Index" asp-fragment="huong-dan">Hướng dẫn đặt bàn</a>
+            <span>© @DateTime.Now.Year · Nhóm 3</span>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
