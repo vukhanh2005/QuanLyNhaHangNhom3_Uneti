@@ -3,7 +3,6 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var title = ViewData["Title"]?.ToString() ?? "Quản trị";
     var name = Context.Session.GetString("HoTen") ?? "Quản trị viên";
-    // ponytail: Enable each menu entry after its controller/action is integrated.
     var menu = new[]
     {
         (Label: "Dashboard", Controller: "TrangChu", Action: "Index", Ready: true),
