@@ -5,11 +5,26 @@
 namespace QuanLyNhaHang.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NVKMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "LoaiBans",
+                columns: table => new
+                {
+                    MaLoaiBan = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TenLoaiBan = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    MoTa = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    TrangThai = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoaiBans", x => x.MaLoaiBan);
+                });
+
             migrationBuilder.CreateTable(
                 name: "TaiKhoans",
                 columns: table => new
@@ -32,6 +47,9 @@ namespace QuanLyNhaHang.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "LoaiBans");
+
             migrationBuilder.DropTable(
                 name: "TaiKhoans");
         }

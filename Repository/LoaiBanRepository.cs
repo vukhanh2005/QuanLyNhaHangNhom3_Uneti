@@ -13,7 +13,12 @@ namespace QuanLyNhaHang.Repository
         }
         public async Task<List<LoaiBan>> GetAllLoaiBan()
         {
-            return await context.LoaiBans.ToListAsync();
+            return await context.LoaiBans.AsNoTracking().OrderBy(x => x.TenLoaiBan).ToListAsync();
+        }
+        public Task<bool> TrungTen(string tenLoaiBan, int? excludedId = null)
+        {
+            return context.LoaiBans.AnyAsync(x => x.TenLoaiBan == tenLoaiBan.Trim()
+                && (!excludedId.HasValue || x.MaLoaiBan != excludedId.Value));
         }
         public async Task<LoaiBan> Them(LoaiBan data)
         {
@@ -31,7 +36,9 @@ namespace QuanLyNhaHang.Repository
                 return null;
             }
 
-            context.Entry(loaiBan).CurrentValues.SetValues(NewData);
+            loaiBan.TenLoaiBan = NewData.TenLoaiBan;
+            loaiBan.MoTa = NewData.MoTa;
+            loaiBan.TrangThai = NewData.TrangThai;
 
             await context.SaveChangesAsync();
 
@@ -57,8 +64,6 @@ namespace QuanLyNhaHang.Repository
             {
                 return null;
             }
-            await context.SaveChangesAsync();
-
             return target;
         }
     }
