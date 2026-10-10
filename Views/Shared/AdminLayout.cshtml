@@ -1,0 +1,95 @@
+@using Microsoft.AspNetCore.Http
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var title = ViewData["Title"]?.ToString() ?? "Quản trị";
+    var name = Context.Session.GetString("HoTen") ?? "Quản trị viên";
+    // ponytail: Enable each menu entry after its controller/action is integrated.
+    var menu = new[]
+    {
+        (Label: "Dashboard", Controller: "TrangChu", Action: "Index", Ready: true),
+        (Label: "Loại bàn", Controller: "LoaiBan", Action: "Index", Ready: true),
+        (Label: "Bàn ăn", Controller: "BanAn", Action: "Index", Ready: false),
+        (Label: "Món ăn", Controller: "MonAn", Action: "Index", Ready: false),
+        (Label: "Khách hàng", Controller: "KhachHang", Action: "Index", Ready: false),
+        (Label: "Phiếu đặt bàn", Controller: "PhieuDatBan", Action: "Index", Ready: false),
+        (Label: "Sử dụng bàn", Controller: "BanAn", Action: "SuDung", Ready: false),
+        (Label: "Thống kê", Controller: "ThongKe", Action: "Index", Ready: false)
+    };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#213c32" />
+    <title>@title - Quản trị nhà hàng</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <a class="admin-skip" href="#admin-content">Đến nội dung chính</a>
+    <aside class="offcanvas-lg offcanvas-start admin-sidebar" tabindex="-1" id="admin-sidebar" aria-labelledby="sidebar-title">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title fs-5" id="sidebar-title">Điều hướng quản trị</h2>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#admin-sidebar" aria-label="Đóng menu"></button>
+        </div>
+        <div class="offcanvas-body">
+            <a class="admin-brand" asp-controller="TrangChu" asp-action="Index">
+                <span class="admin-brand-mark" aria-hidden="true">N</span>
+                <span>NHÀ HÀNG<small>KHÔNG GIAN QUẢN TRỊ</small></span>
+            </a>
+            <p class="admin-nav-label">ĐIỀU HÀNH NHÀ HÀNG</p>
+            <nav class="admin-nav" aria-label="Chức năng quản trị">
+                @foreach (var item in menu)
+                {
+                    var active = item.Ready && currentController == item.Controller
+                        && ViewContext.RouteData.Values["action"]?.ToString() == item.Action;
+                    if (item.Ready)
+                    {
+                        <a class="admin-nav-item @(active ? "is-active" : "")"
+                           asp-controller="@item.Controller" asp-action="@item.Action"
+                           aria-current="@(active ? "page" : null)">
+                            <span>@item.Label</span><span aria-hidden="true">↗</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="admin-nav-item is-pending" aria-disabled="true">
+                            <span>@item.Label</span><small>Chờ tích hợp</small>
+                        </span>
+                    }
+                }
+            </nav>
+            <div class="admin-sidebar-note"><span>QUẢN LÝ TẬP TRUNG</span><p>Từ bàn ăn đến từng cuộc hẹn của khách hàng.</p></div>
+        </div>
+    </aside>
+    <div class="admin-workspace">
+        <header class="admin-header">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#admin-sidebar" aria-controls="admin-sidebar" aria-label="Mở menu quản trị">☰</button>
+                <div class="admin-breadcrumb">Quản trị <span aria-hidden="true">/</span> <strong>@title</strong></div>
+            </div>
+            <div class="admin-account">
+                <div><strong title="@name">@name</strong><small>Quản trị viên</small></div>
+                <a asp-controller="Account" asp-action="DangXuat">Đăng xuất</a>
+            </div>
+        </header>
+        <main id="admin-content" class="admin-content" tabindex="-1">
+            <div class="admin-page-heading">
+                <p class="admin-eyebrow">QUẢN TRỊ NHÀ HÀNG</p>
+                <h1>@title</h1>
+                @if (ViewData["Description"] is string description)
+                {
+                    <p class="admin-description">@description</p>
+                }
+            </div>
+            @RenderBody()
+        </main>
+        <footer class="admin-footer"><span>© @DateTime.Now.Year · Nhà hàng · Nhóm 3</span><span>Hệ thống quản lý và đặt bàn</span></footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

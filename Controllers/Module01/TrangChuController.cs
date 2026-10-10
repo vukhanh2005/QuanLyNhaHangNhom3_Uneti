@@ -11,7 +11,14 @@ namespace QuanLyNhaHang.Controllers
             if(HttpContext.Session.GetInt32("MaTaiKhoan") != null)
             {
                 //Da dang nhap roi
-                return View();
+                if(HttpContext.Session.GetString("VaiTro") == nameof(VaiTro.Admin))
+                {
+                    return View("Admin");
+                }
+                else
+                {
+                    return View("Client");
+                }
             }
             else
             {

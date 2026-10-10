@@ -1,0 +1,35 @@
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    ViewData["Title"] = "Dashboard";
+    ViewData["Description"] = "Tổng quan hoạt động và tình trạng phục vụ của nhà hàng.";
+    var metrics = new[] { "Tổng số loại bàn", "Tổng số bàn ăn", "Tổng số món ăn", "Tổng số khách hàng",
+        "Tổng số phiếu đặt bàn", "Phiếu chờ xác nhận", "Phiếu đã xác nhận", "Bàn đang sử dụng" };
+}
+<div class="admin-notice" role="status"><strong>Đang chờ tích hợp dữ liệu.</strong> Các chỉ số sẽ được cập nhật khi module Dashboard hoàn thành.</div>
+<section class="admin-metrics" aria-label="Các chỉ số tổng quan">
+    @foreach (var metric in metrics)
+    {
+        <article class="admin-metric">
+            <h2>@metric</h2><div class="admin-metric-value" aria-hidden="true">—</div><p>Chưa có dữ liệu kết nối</p>
+        </article>
+    }
+</section>
+<div class="admin-panels">
+    <section class="admin-panel" aria-labelledby="reservations-title">
+        <div class="admin-panel-heading"><div><p class="admin-eyebrow">ĐẶT BÀN</p><h2 id="reservations-title">Phiếu cần xử lý</h2></div><span class="admin-badge">Chờ tích hợp</span></div>
+        <div class="admin-empty">
+            <span class="admin-empty-mark" aria-hidden="true">◇</span>
+            <h3>Tiếp nhận những cuộc hẹn mới</h3>
+            <p>Danh sách phiếu sẽ hiển thị tại đây để xem chi tiết, xác nhận hoặc hủy đặt bàn.</p>
+        </div>
+        <div class="admin-status-legend" aria-label="Trạng thái phiếu đặt bàn">
+            <span>Chờ xác nhận</span><span>Đã xác nhận</span><span>Đã sử dụng</span><span>Đã hủy</span>
+        </div>
+    </section>
+    <section class="admin-panel" aria-labelledby="operations-title">
+        <div class="admin-panel-heading"><div><p class="admin-eyebrow">VẬN HÀNH</p><h2 id="operations-title">Quản lý phục vụ</h2></div></div>
+        <a class="admin-shortcut" asp-controller="LoaiBan" asp-action="Index"><div><strong>Quản lý loại bàn</strong><p>Danh mục loại bàn của nhà hàng</p></div><span aria-hidden="true">↗</span></a>
+        <div class="admin-operation"><strong>Tình trạng bàn ăn</strong><p>Sẵn sàng · Đang sử dụng · Tạm ngừng phục vụ</p><span class="admin-badge">Chờ tích hợp</span></div>
+        <div class="admin-operation"><strong>Thống kê hoạt động</strong><p>Theo bàn, loại bàn, khách hàng, trạng thái và tháng.</p><span class="admin-badge">Chờ tích hợp</span></div>
+    </section>
+</div>
