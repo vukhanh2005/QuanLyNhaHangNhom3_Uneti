@@ -1,5 +1,8 @@
-﻿
+﻿// Họ và tên: Vi Thái Học
+// Mã sinh viên: 23103100054
+// Nội dung thực hiện: Xây dựng entity bàn ăn, validation và liên kết với loại bàn.
 using System.ComponentModel.DataAnnotations;
+using QuanLyNhaHang.Models;
 
 
 namespace QuanLyNhaHangNhom3_Uneti.Models
@@ -15,6 +18,8 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
 
         [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn loại bàn.")]
         public int MaLoaiBan { get; set; }
+
+        public LoaiBan LoaiBan { get; set; } = null!;
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0")]
@@ -32,7 +37,7 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
         [RegularExpression(BanAnTrangThai.Pattern, ErrorMessage = "Trạng thái không hợp lệ.")]
         public string TrangThai { get; set; } = BanAnTrangThai.SanSang;
 
-        // Khi Module 3 có entity chính thức, thêm navigation và FK DeleteBehavior.Restrict:
+      
         // public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
     }
 }

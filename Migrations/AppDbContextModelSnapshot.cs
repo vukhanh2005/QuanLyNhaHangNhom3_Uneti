@@ -20,6 +20,31 @@ namespace QuanLyNhaHang.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("QuanLyNhaHang.Models.LoaiBan", b =>
+                {
+                    b.Property<int>("MaLoaiBan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLoaiBan"));
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TenLoaiBan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("MaLoaiBan");
+
+                    b.ToTable("LoaiBans");
+                });
+
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
                 {
                     b.Property<int>("MaTaiKhoan")
@@ -58,6 +83,65 @@ namespace QuanLyNhaHang.Migrations
                     b.HasKey("MaTaiKhoan");
 
                     b.ToTable("TaiKhoans");
+                });
+
+            modelBuilder.Entity("QuanLyNhaHangNhom3_Uneti.Models.BanAn", b =>
+                {
+                    b.Property<int>("MaBan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaBan"));
+
+                    b.Property<int>("MaLoaiBan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SoChoNgoi")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenBan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ViTri")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MaBan");
+
+                    b.HasIndex("MaLoaiBan");
+
+                    b.HasIndex("TenBan")
+                        .IsUnique();
+
+                    b.ToTable("BanAns", t =>
+                        {
+                            t.HasCheckConstraint("CK_BanAns_SoChoNgoi", "[SoChoNgoi] > 0");
+
+                            t.HasCheckConstraint("CK_BanAns_TrangThai", "[TrangThai] IN (N'Sẵn sàng', N'Đang sử dụng', N'Tạm ngừng phục vụ')");
+                        });
+                });
+
+            modelBuilder.Entity("QuanLyNhaHangNhom3_Uneti.Models.BanAn", b =>
+                {
+                    b.HasOne("QuanLyNhaHang.Models.LoaiBan", "LoaiBan")
+                        .WithMany()
+                        .HasForeignKey("MaLoaiBan")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LoaiBan");
                 });
 #pragma warning restore 612, 618
         }
