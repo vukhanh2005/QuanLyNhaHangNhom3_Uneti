@@ -8,7 +8,23 @@ namespace QuanLyNhaHang.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            if(HttpContext.Session.GetInt32("MaTaiKhoan") != null)
+            {
+                //Da dang nhap roi
+                if(HttpContext.Session.GetString("VaiTro") == nameof(VaiTro.Admin))
+                {
+                    return View("Admin");
+                }
+                else
+                {
+                    return View("Client");
+                }
+            }
+            else
+            {
+                //Direct den trang dang nhap
+                return RedirectToAction("Login", "Account");
+            }
         }
 
         public IActionResult Privacy()

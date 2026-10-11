@@ -2,11 +2,11 @@ using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
 
-namespace QuanLyNhaHang.Service
+namespace QuanLyNhaHang.Service.Implement
 {
     public class LoginService : ILoginService
     {
-        AccountRepository repository = null;
+        AccountRepository repository;
         public LoginService(AccountRepository repository)
         {
             this.repository = repository;
@@ -30,13 +30,22 @@ namespace QuanLyNhaHang.Service
 
             if(account == null) //khong co tai khoan => tien hanh dang ki
             {
-                await repository.themTaiKhoan(request.ConvertToTaiKhoan());
+                TaiKhoan responseAccount = await repository.themTaiKhoan(request.ConvertToTaiKhoan());
+                return new TaiKhoanResponse(
+                    responseAccount.MaTaiKhoan,
+                    responseAccount.TenDangNhap,
+                    responseAccount.MatKhau,
+                    responseAccount.HoTen,
+                    responseAccount.Email,
+                    responseAccount.VaiTro.ToString(),
+                    responseAccount.TrangThai,
+                    "[SUCCESS] Đăng kí thành công"
+                );
             }
             else // da co tai khoan => khong dang ki duoc
             {
                 return new TaiKhoanResponse($"Đã có tài khoản {request.username} trong hệ thống!!");
             }
-            return null;
         }
         public async Task<TaiKhoanResponse> Login(TaiKhoanRequest request)
         {
@@ -72,7 +81,7 @@ namespace QuanLyNhaHang.Service
                 }
                 else
                 {
-                    string message = "[FAIL] Mật khẩu không chính xác";
+                    string message = "Mật khẩu không chính xác";
                     TaiKhoanResponse response = new TaiKhoanResponse(message);
                     return response;
                 }
@@ -80,7 +89,7 @@ namespace QuanLyNhaHang.Service
             else
             {
                 //Acc khong ton tai
-                string message = "[FAIL] Tài khoản không có trong hệ thống";
+                string message = "Tài khoản không có trong hệ thống";
                 TaiKhoanResponse response = new TaiKhoanResponse(message);
                 return response;
             }
