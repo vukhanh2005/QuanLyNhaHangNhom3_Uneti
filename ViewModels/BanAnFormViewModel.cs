@@ -1,6 +1,6 @@
 // Họ và tên: Vi Thái Học
 // Mã sinh viên: 23103100054
-// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
+// Nội dung thực hiện: Dữ liệu và validation cho form thêm, sửa bàn ăn.
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,6 +10,8 @@ namespace QuanLyNhaHang.ViewModels;
 
 public class BanAnFormViewModel
 {
+    [ValidateNever]
+    public int? MaBan { get; set; }
     [Required(ErrorMessage = "Tên bàn không được để trống.")]
     [StringLength(100, ErrorMessage = "Tên bàn tối đa 100 ký tự.")]
     [Display(Name = "Tên bàn")]

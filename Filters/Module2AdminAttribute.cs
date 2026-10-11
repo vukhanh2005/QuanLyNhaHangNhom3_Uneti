@@ -1,6 +1,6 @@
 // Họ và tên: Vi Thái Học
 // Mã sinh viên: 23103100054
-// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
+// Nội dung thực hiện: Kiểm tra quyền Admin qua Session cho các thao tác quản lý bàn ăn.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

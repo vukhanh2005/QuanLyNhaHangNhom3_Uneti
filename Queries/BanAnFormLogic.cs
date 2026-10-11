@@ -1,4 +1,6 @@
-
+// Họ và tên: Vi Thái Học
+// Mã sinh viên: 23103100054
+// Nội dung thực hiện: Chuẩn hóa dữ liệu form, kiểm tra tên bàn trùng và ánh xạ dữ liệu bàn ăn.
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.ViewModels;
@@ -47,6 +49,7 @@ public static class BanAnFormLogic
 
     public static BanAnFormViewModel FromEntity(BanAn entity) => new()
     {
+        MaBan = entity.MaBan,
         TenBan = entity.TenBan,
         MaLoaiBan = entity.MaLoaiBan,
         SoChoNgoi = entity.SoChoNgoi,

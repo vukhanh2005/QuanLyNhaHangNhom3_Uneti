@@ -1,10 +1,10 @@
 @* Họ và tên: Vi Thái Học
    Mã sinh viên: 23103100054
-   Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang. *@
+   Nội dung thực hiện: Giao diện sửa thông tin, trạng thái bàn ăn và hiển thị lỗi validation. *@
 @model QuanLyNhaHang.ViewModels.BanAnFormViewModel
 @{ ViewData["Title"] = "Sửa bàn ăn"; }
 <h1>Sửa bàn ăn</h1>
-<form asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]" method="post">
+<form asp-action="Edit" asp-route-id="@Model.MaBan" method="post">
     <partial name="_Form" model="Model" />
     <div class="mt-4">
         <button type="submit" class="btn btn-primary">Lưu thay đổi</button>

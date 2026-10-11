@@ -1,0 +1,14 @@
+@* Họ và tên: Vi Thái Học
+   Mã sinh viên: 23103100054
+   Nội dung thực hiện: Giao diện xác nhận xóa bàn ăn và hiển thị lỗi nghiệp vụ. *@
+@model QuanLyNhaHangNhom3_Uneti.Models.BanAn
+@{ ViewData["Title"] = "Xóa bàn ăn"; }
+<h1>Xóa bàn ăn</h1>
+<p class="alert alert-warning">Bạn có chắc chắn muốn xóa bàn này?</p>
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<partial name="_Details" model="Model" />
+<form asp-action="Delete" asp-route-id="@Model.MaBan" method="post">
+    <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+</form>
+

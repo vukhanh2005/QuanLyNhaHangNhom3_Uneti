@@ -1,8 +1,11 @@
 @* Họ và tên: Vi Thái Học
    Mã sinh viên: 23103100054
-   Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang. *@
+   Nội dung thực hiện: Form dùng chung cho thêm, sửa bàn ăn với select, textarea và validation. *@
 @model QuanLyNhaHang.ViewModels.BanAnFormViewModel
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+@if (!Model.LoaiBanOptions.Any()) {
+    <p class="alert alert-warning">Chưa có loại bàn. Vui lòng thêm loại bàn trong Module 1 trước.</p>
+}
 <div class="row g-3">
     <div class="col-md-6">
         <label asp-for="TenBan" class="form-label"></label>
