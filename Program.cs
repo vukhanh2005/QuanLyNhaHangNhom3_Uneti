@@ -2,6 +2,7 @@ using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
+using QuanLyNhaHang.Utils;
 
 namespace QuanLyNhaHang
 {
@@ -15,6 +16,8 @@ namespace QuanLyNhaHang
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<AccountRepository>();
+            builder.Services.AddScoped<LoaiBanRepository>();
+            builder.Services.AddScoped<ILoaiBanService, QuanLyNhaHang.Service.Implement.LoaiBanService>();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(10);
@@ -44,6 +47,7 @@ namespace QuanLyNhaHang
                 name: "default",
                 pattern: "{controller=TrangChu}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
             app.Run();
         }
     }

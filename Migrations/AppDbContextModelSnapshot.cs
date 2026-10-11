@@ -20,6 +20,31 @@ namespace QuanLyNhaHang.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("QuanLyNhaHang.Models.LoaiBan", b =>
+                {
+                    b.Property<int>("MaLoaiBan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLoaiBan"));
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TenLoaiBan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("MaLoaiBan");
+
+                    b.ToTable("LoaiBans");
+                });
+
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
                 {
                     b.Property<int>("MaTaiKhoan")
