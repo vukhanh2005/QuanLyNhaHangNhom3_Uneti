@@ -1,6 +1,6 @@
 // Họ và tên: Vi Thái Học
 // Mã sinh viên: 23103100054
-// Nội dung thực hiện: Quản lý bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang.
+// Nội dung thực hiện: Kiểm thử validation, xử lý form, truy vấn và phân quyền Module 2.
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +82,8 @@ Check(Module2AdminAttribute.IsAdmin(session), "Admin allowed");
 session.Clear(); session.SetString("VaiTro", "Admin");
 Check(!Module2AdminAttribute.IsAdmin(session), "Role without account denied");
 Console.WriteLine($"{count} checks passed. Database integration is not covered by these checks.");
+if (Environment.GetEnvironmentVariable("MODULE2_SQL_TESTS") == "1")
+    await Module2SqlChecks.RunAsync();
 
 sealed class MemorySession : ISession
 {

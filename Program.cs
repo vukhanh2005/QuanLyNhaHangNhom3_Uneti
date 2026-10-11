@@ -7,7 +7,7 @@ namespace QuanLyNhaHang
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +28,15 @@ namespace QuanLyNhaHang
                 );
             });
             var app = builder.Build();
+            // Vi Thái Học - 23103100054: chỉ seed Module 2 khi được gọi rõ ràng.
+            if (args.Contains("--seed-ban-an"))
+            {
+                using var scope = app.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var count = await QuanLyNhaHang.Data.BanAnSeeder.SeedAsync(context);
+                Console.WriteLine($"Đã thêm {count} bàn mẫu.");
+                return;
+            }
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -43,7 +52,7 @@ namespace QuanLyNhaHang
                 name: "default",
                 pattern: "{controller=TrangChu}/{action=Index}/{id?}")
                 .WithStaticAssets();
-            app.Run();
+            await app.RunAsync();
         }
     }
 }

@@ -1,202 +1,87 @@
-<!-- Họ và tên: Vi Thái Học
-Mã sinh viên: 23103100054
-Nội dung thực hiện: Phân tích và hướng dẫn Module 2. -->
-
+<!-- Vi Thái Học - 23103100054: Hướng dẫn Module 2 -->
 # Module 2 — Quản lý và tra cứu bàn ăn
 
-## 1. Phân tích tài liệu và liên kết module
+## 1. Kiến trúc và liên kết
+Đã nối Controller/Razor với EF Core/SQL Server. Dùng nguyên LoaiBan của Module 1 và Session MaTaiKhoan (int), VaiTro (string Admin/User). Không sửa entity hoặc nghiệp vụ đăng nhập của nhóm. Chưa có PhieuDatBan để kiểm thử lịch sử đặt bàn.
 
-Nguồn: đề tài Word trong thư mục gốc, mục 6, 9–17, 20–21.
-Module 2 chịu trách nhiệm CRUD bàn ăn, cập nhật trạng thái, tìm theo tên/vị trí,
-lọc loại/số chỗ/trạng thái, bốn kiểu sắp xếp và phân trang kết hợp.
-Module 1 sở hữu LoaiBan, đăng nhập và Session; Module 3 sở hữu PhieuDatBan;
-Module 4 quản lý quá trình sử dụng bàn.
+## 2. File
+Models/BanAn.cs, BanAnTrangThai.cs; ViewModels/BanAnFormViewModel.cs, BanAnIndexViewModel.cs; Queries/BanAnFormLogic.cs, BanAnQueryExtensions.cs, BanAnPagination.cs; Filters/Module2AdminAttribute.cs; Controllers/BanAnController.cs; Views/BanAn/*; Data/BanAnSeeder.cs; scripts/Test-Module2.ps1 và hai file Module2*Checks.cs.txt.
 
-Trạng thái triển khai: CHƯA HOÀN THÀNH.
-Repository chưa có LoaiBan và đăng nhập chưa ghi Session.
-Chưa tạo entity thay thế vì yêu cầu của chủ dự án không cho phép tự tạo LoaiBan.
-Chưa tạo migration hoặc thay đổi database.
-Phạm vi đã được người dùng xác nhận: chỉ làm phần không cần LoaiBan.
-Không tạo entity LoaiBan hoặc Controller CRUD bỏ qua kiểm tra khóa ngoại.
+## 3. Entity và file dùng chung
+BanAn giữ namespace hiện có; navigation LoaiBan dùng entity QuanLyNhaHang.Models.LoaiBan. FK Restrict, unique index TenBan, CHECK số chỗ > 0 và ba trạng thái hợp lệ.
 
-## 2. Cấu trúc
-
-Đã bổ sung:
-- Models/BanAnTrangThai.cs
-- ViewModels/BanAnFormViewModel.cs
-- ViewModels/BanAnIndexViewModel.cs
-- Queries/BanAnQueryExtensions.cs
-- Queries/BanAnPagination.cs
-- Queries/BanAnFormLogic.cs
-- Filters/Module2AdminAttribute.cs
-- Views/BanAn/_Form.cshtml, Create.cshtml, Edit.cshtml
-- scripts/Test-Module2.ps1, scripts/Module2Checks.cs.txt
-
-Đã cập nhật validation Models/BanAn.cs.
-Còn cần BanAnController, Index/Details/Delete View, cấu hình quan hệ,
-migration và seed sau khi xác định entity LoaiBan dùng chung.
-
-## 3. Entity và quan hệ
-
-BanAn giữ namespace hiện có để không phá tham chiếu.
-Tên và vị trí bắt buộc, dài tối đa 100; mô tả nullable và tối đa 500;
-số chỗ và mã loại lớn hơn 0; trạng thái chỉ nhận ba giá trị hợp lệ.
-Sau khi có LoaiBan chính thức, thêm navigation LoaiBan và khóa ngoại MaLoaiBan
-với DeleteBehavior.Restrict. Tên bàn cần unique index ở database để chống
-trùng khi hai yêu cầu lưu đồng thời, bên cạnh AnyAsync trong Controller.
-
-PhieuDatBan chưa tồn tại: chỉ ghi chú navigation, không tạo entity của Module 3.
-Khi tích hợp cần FK PhieuDatBan.MaBan với Restrict và AnyAsync trước khi xóa.
-Nếu có lịch sử đặt bàn thì chặn xóa, hướng dẫn chuyển sang Tạm ngừng phục vụ.
+FILE DÙNG CHUNG – CẦN TRAO ĐỔI VỚI NHÓM TRƯỚC KHI MERGE:
+- AppDbContext.cs: chỉ thêm quan hệ/index/check BanAn.
+- Program.cs: chỉ thêm chế độ seed gọi rõ ràng.
+- Views/Shared/_Layout.cshtml: thêm liên kết Bàn ăn.
+- Migration AddBanAn và snapshot.
 
 ## 4. ViewModel
-
-BanAnFormViewModel chỉ chứa các trường được chỉnh sửa, không nhận MaBan.
-BanAnIndexViewModel giữ điều kiện tra cứu, kết quả, tổng bản ghi và trang hiện tại.
-PageSize = 5; danh sách trống quy ước trang 1/1.
+Form chứa các trường được sửa và dropdown. MaBan chỉ phục vụ URL; POST Edit lấy id từ route và không đổi khóa chính entity. Index giữ điều kiện tra cứu và thông tin trang, PageSize = 5.
 
 ## 5. CRUD và phân quyền
+GET Index/Details cho phép xem. GET/POST Create/Edit/Delete kiểm tra Admin tại máy chủ; POST có anti-forgery. Kiểm tra tên trùng bằng AnyAsync, Edit loại trừ chính id; kiểm tra LoaiBan tồn tại và tải lại dropdown khi lỗi. Unique index bảo vệ lưu trùng đồng thời. Edit cho phép đổi trạng thái. Delete GET không xóa; POST chặn bàn đang sử dụng và xử lý lỗi FK. Chưa có rowversion chống hai người sửa cùng lúc.
 
-Controller chưa triển khai vì cần LoaiBan chính thức.
-BanAnFormLogic đã cung cấp Normalize, ValidateNameAsync, ApplyTo và FromEntity.
-ValidateNameAsync dùng AnyAsync, loại trừ currentId khi sửa và ghi lỗi vào ModelState.
-ApplyTo chỉ cập nhật trường được phép, giữ nguyên MaBan. Đây là hàm hỗ trợ,
-chưa được gọi qua endpoint CRUD. Controller tương lai phải gọi validation đầy đủ,
-kiểm tra LoaiBan tồn tại và ModelState.IsValid trước khi ApplyTo/SaveChangesAsync.
-AnyAsync không thay thế unique index: khi tích hợp migration cần thêm ràng buộc
-tên duy nhất và xử lý lỗi lưu đồng thời.
-Dự kiến GET/POST Create, Edit, Delete có Module2Admin và POST có anti-forgery.
-Mã bàn lấy từ route và dùng tìm entity hiện có; không cập nhật khóa chính.
-ModelState invalid phải tải lại danh sách loại bàn.
-
-Hợp đồng Session dự kiến:
-- MaTaiKhoan: SetInt32, số nguyên dương.
-- VaiTro: SetString("Admin") hoặc SetString("User").
-Cần đối chiếu với Module 1 trước khi tích hợp.
-Module2AdminAttribute hiện trả HTTP 403 nếu không đủ quyền.
-Không có endpoint giả lập đăng nhập hoặc tự cấp quyền Admin.
+Khi Module 3 thêm PhieuDatBan: thêm navigation, FK Restrict và AnyAsync kiểm tra lịch sử trước Delete. Không tạo entity giả, không tự đổi trạng thái khi tạo phiếu.
 
 ## 6. Search
-
-TraCuu dùng Contains với TenBan hoặc ViTri và tự Trim từ khóa trước khi lọc.
-Không tải toàn bộ database.
+Trim keyword; Contains tên bàn hoặc vị trí. Null/rỗng không lọc. So sánh hoa/thường/dấu phụ thuộc SQL Server collation.
 
 ## 7. Filter
-
-Các Where nối tiếp trên cùng IQueryable để điều kiện kết hợp bằng AND.
-Lọc số chỗ là khớp chính xác, không phải số chỗ tối thiểu.
+Loại bàn, số chỗ chính xác, trạng thái kết hợp bằng AND trên cùng IQueryable. Dropdown có Tất cả; số chỗ lấy distinct từ database.
 
 ## 8. Sort
-
-name_asc, name_desc, seat_asc, seat_desc.
-ThenBy(MaBan) đảm bảo thứ tự ổn định giữa các trang khi số chỗ bằng nhau.
+name_asc, name_desc, seat_asc, seat_desc. Sort lạ về name_asc. ThenBy(MaBan) giữ thứ tự ổn định.
 
 ## 9. Pagination
-
-BanAnPagination.LoadPageAsync đã thực hiện AsNoTracking, TraCuu,
-CountAsync, giới hạn page trong 1..TotalPages, Skip/Take rồi ToListAsync.
-Controller sau này truyền query Include(LoaiBan) vào hàm này.
-Chưa tích hợp Controller/View hoặc kiểm thử SQL Server; giữ query string trên giao diện chưa hoàn thành.
+Include(LoaiBan) → AsNoTracking → Search/Filter/Sort → CountAsync → giới hạn page → Skip/Take → ToListAsync. Trang âm về 1, quá lớn về cuối, rỗng quy ước 1/1. Không tải toàn bảng trước phân trang.
 
 ## 10. Index
+Địa chỉ /BanAn; hiện tên loại bàn và các trường bắt buộc. Link trước/sau/số trang giữ keyword, maLoaiBan, soChoNgoi, trangThai, sortOrder. Tìm lại quay về trang 1; Reset bỏ điều kiện. Nút quản trị chỉ hiện với Admin.
 
-Cần hiển thị MaBan, TenBan, LoaiBan.TenLoaiBan, SoChoNgoi, ViTri, TrangThai.
-Form GET chứa keyword, maLoaiBan, soChoNgoi, trangThai, sortOrder.
-Liên kết phân trang phải mang đủ năm điều kiện. Reset dẫn về Index không query.
-Nút quản trị chỉ hiện khi Session hợp lệ nhưng Controller vẫn phải kiểm tra quyền.
+## 11. View CRUD
+Create/Edit dùng _Form với select/textarea/validation. Details/Delete dùng _Details. Delete có xác nhận POST. Thành công thông báo TempData. Form được bảo vệ bằng token chống giả mạo.
 
-## 11. Các view CRUD
+## 12. Migration và chạy
+AddBanAn tạo LoaiBans và BanAns vì migration cũ chỉ có TaiKhoans; không sửa schema TaiKhoans. Nếu nhóm đã tạo hai bảng thủ công hoặc có migration mới, phải thống nhất baseline trước khi áp dụng, không xóa database để né conflict. Chưa áp dụng lên database chính.
 
-Create/Edit dùng partial _Form, asp-for, asp-items, validation message,
-textarea và validation scripts.
-Details/Delete chưa triển khai, chờ quan hệ LoaiBan.
-
-## 12. Migration
-
-FILE DÙNG CHUNG – CẦN TRAO ĐỔI VỚI NHÓM TRƯỚC KHI MERGE.
-
-Không tạo migration từ model thiếu entity đã có trong snapshot:
-Snapshot hiện có TaiKhoan và AppDbContext đã đăng ký TaiKhoans.
-Phải giữ đăng ký này để migration không vô tình sinh DropTable(TaiKhoans).
-Phải thống nhất model dùng chung, lấy migration mới nhất của nhóm,
-kiểm tra Up/Down trước khi update database.
-
-Sau khi giải quyết liên kết:
+Công cụ EF 10.0.4 đã cài cục bộ trong obj/module2-tools. Tại thư mục dự án:
 ```powershell
-dotnet ef migrations add AddBanAn
-dotnet ef database update
+dotnet build QuanLyNhaHang.csproj
+.\obj\module2-tools\dotnet-ef migrations list
+.\obj\module2-tools\dotnet-ef database update
+dotnet run --launch-profile http
 ```
-Máy hiện chưa có lệnh dotnet ef; có thể dùng Package Manager Console trong
-Visual Studio với Add-Migration và Update-Database sau khi model hoàn chỉnh.
+Máy có dotnet-ef dùng `dotnet ef database update`; Visual Studio PMC dùng `Update-Database`. Migration đã được tạo, không tạo lại AddBanAn. Sau khi khởi động, mở /BanAn trên địa chỉ ứng dụng.
 
 ## 13. Seed
-
-Cần ít nhất 20 bàn, 2/4/6/8 chỗ, nhiều vị trí và cả ba trạng thái.
-Lấy MaLoaiBan từ dữ liệu thật trong database, không hard-code FK chưa tồn tại.
-Seed phải chạy lại được mà không nhân đôi dữ liệu.
-Không seed tài khoản hoặc phiếu đặt bàn thuộc module khác.
+Tạo ít nhất một loại bàn hoạt động bằng Module 1 trước (nên có bốn loại theo đề), sau đó:
+```powershell
+dotnet run -- --seed-ban-an
+```
+Chỉ thêm Bàn 01..20 còn thiếu; dùng FK thật, 2/4/6/8 chỗ, năm vị trí và ba trạng thái. Không tạo tài khoản/loại bàn/phiếu trong database chính. Không tự seed khi chạy web.
 
 ## 14. Kiểm thử
-
-Chạy kiểm tra phần độc lập:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-Module2.ps1
 ```
-31 kiểm tra đã đạt: Data Annotation, trạng thái Sẵn sàng, từ khóa có khoảng trắng,
-query kết hợp trên dữ liệu bộ nhớ,
-bốn kiểu sort, biên phân trang và hợp đồng Session.
-Đã kiểm tra chuẩn hóa form, giữ mã bàn khi cập nhật và dịch LINQ sang SQL Server
-bằng ToQueryString (WHERE/ORDER BY/OFFSET/FETCH NEXT).
-Không kết nối database; chưa kiểm thử thực thi LoadPageAsync, AnyAsync hoặc CRUD HTTP.
+Chạy SQL Server LocalDB và HTTP:
+```powershell
+dotnet build QuanLyNhaHang.csproj --configuration Module2Check
+$env:MODULE2_SQL_TESTS = '1'
+$env:MODULE2_APP_DLL = (Resolve-Path bin/Module2Check/net10.0/QuanLyNhaHang.dll).Path
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-Module2.ps1
+Remove-Item Env:MODULE2_SQL_TESTS
+Remove-Item Env:MODULE2_APP_DLL
+```
+Cần LocalDB MSSQLLocalDB và cổng 15397 trống. Script tạo database QuanLyNhaHang_Module2Test_<GUID>, chạy migration, tạo fixture và xóa đúng database test trong finally. Không dùng database chính. Tài khoản test có mật khẩu ngẫu nhiên.
 
-Checklist tích hợp còn cần thực hiện:
-1. Thêm hợp lệ: lưu và về Index.
-2. Thiếu tên: lỗi tại form.
-3. Trùng tên: không lưu.
-4. Số chỗ 0: lỗi.
-5. Số chỗ âm: lỗi.
-6. Sửa hợp lệ và giữ nguyên MaBan.
-7. Xóa bàn chưa có quan hệ.
-8. Bàn có phiếu: chặn xóa, lịch sử còn nguyên.
-9. Tìm tên tồn tại.
-10. Tên không tồn tại: thông báo rỗng.
-11. Tìm vị trí.
-12. Lọc loại.
-13. Lọc số chỗ.
-14. Lọc trạng thái.
-15. Kết hợp ba bộ lọc.
-16. Tên A–Z.
-17. Tên Z–A.
-18. Số chỗ tăng.
-19. Số chỗ giảm.
-20. Trang đầu không có Previous hoạt động.
-21. Trang giữa.
-22. Trang cuối không có Next hoạt động.
-23. Previous về đúng trang.
-24. Next đến đúng trang.
-25. Search + Filter.
-26. Search + Sort.
-27. Filter + Sort.
-28. Search + Filter + Sort + Pagination.
-29. Chuyển trang giữ đủ điều kiện.
-30. Reset xóa điều kiện.
-31. Admin truy cập Create.
-32. Khách truy cập Create: 403.
-33. Khách truy cập Edit trực tiếp: 403.
-34. Khách truy cập Delete trực tiếp: 403.
+Đã đạt 31 kiểm tra logic + 21 SQL/Controller + 18 HTTP: CRUD thật, tên trùng, FK, validation, seed lặp lại, phân trang kết hợp, link giữ điều kiện, Session Admin/User, anti-forgery và không sửa mã qua form. Chưa kiểm thử PhieuDatBan hoặc quan sát giao diện bằng ảnh trình duyệt.
 
-Bổ sung: POST thiếu anti-forgery, loại không tồn tại, trạng thái giả,
-tên toàn khoảng trắng, page âm/quá lớn, hai yêu cầu tạo trùng đồng thời.
+Checklist bảo vệ: thêm hợp lệ/thiếu tên/trùng tên; số chỗ 0/âm; sửa hợp lệ/trùng tên; xóa và xác nhận; bảo vệ lịch sử (chờ Module 3); tìm tên/vị trí/không có kết quả; ba filter riêng/kết hợp; bốn sort; trang đầu/giữa/cuối/trước/sau; tổ hợp search/filter/sort/page; giữ query; Reset; Admin vào Create và khách bị chặn Create/Edit/Delete trực tiếp.
 
 ## 15. Git
-
-Làm trên Module2-VTH, không sửa main. Các phiên bản trước đã commit/push;
-những thay đổi của lượt triển khai hiện tại chưa commit/push.
-Mã sinh viên: 23103100054. Gợi ý chia commit theo phần việc:
-- [MaSV] [BanAn] Them validation va trang thai ban
-- [MaSV] [BanAn] Them ViewModel va truy van tra cuu
-- [MaSV] [BanAn] Them phan quyen va giao dien form
-- [MaSV] [BanAn] Hoan thien CRUD va quan he du lieu
-- [MaSV] [BanAn] Them phan trang migration va du lieu mau
-- [MaSV] [BanAn] Kiem thu va huong dan tich hop
-
+Nhánh Module2-VTH. Chưa commit/push lượt tích hợp này; giữ nguyên thay đổi chưa commit của người dùng ở BanAnQueryExtensions.cs. Gợi ý:
+- 23103100054-ViThaiHoc.Lien ket BanAn voi LoaiBan va them migration
+- 23103100054-ViThaiHoc.Them CRUD va giao dien tra cuu ban an
+- 23103100054-ViThaiHoc.Them seed va kiem thu SQL Server HTTP
