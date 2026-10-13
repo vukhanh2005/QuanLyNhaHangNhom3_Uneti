@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace QuanLyNhaHang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260926090159_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20261010202846_NVKMigration")]
+    partial class NVKMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,6 +22,31 @@ namespace QuanLyNhaHang.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("QuanLyNhaHang.Models.LoaiBan", b =>
+                {
+                    b.Property<int>("MaLoaiBan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLoaiBan"));
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TenLoaiBan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("MaLoaiBan");
+
+                    b.ToTable("LoaiBans");
+                });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
                 {

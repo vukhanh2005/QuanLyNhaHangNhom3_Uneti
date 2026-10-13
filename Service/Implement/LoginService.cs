@@ -1,4 +1,5 @@
 using QuanLyNhaHang.DTO;
+using QuanLyNhaHang.Helpers;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
 
@@ -11,26 +12,38 @@ namespace QuanLyNhaHang.Service.Implement
         {
             this.repository = repository;
         }
+
         public async Task<TaiKhoanResponse> Register(TaiKhoanRequest request)
         {
-            //Kiem tra du lieu de trong
-            if(request.hoTen.Trim().Equals("") || request.username.Trim().Equals("") || request.password.Trim().Equals("")
-            || request.confirmPassword.Trim().Equals("") || request.email.Trim().Equals("")
-            )
+            // Kiểm tra dữ liệu để trống
+            if (string.IsNullOrWhiteSpace(request.hoTen) ||
+                string.IsNullOrWhiteSpace(request.username) ||
+                string.IsNullOrWhiteSpace(request.password) ||
+                string.IsNullOrWhiteSpace(request.confirmPassword) ||
+                string.IsNullOrWhiteSpace(request.email))
             {
                 return new TaiKhoanResponse("Dữ liệu không được để trống");
             }
-            //Kiem tra nhap lai mat khau co trung khong
+
+            // Kiểm tra nhập lại mật khẩu có trùng khớp không
             if (!request.confirmPassword.Equals(request.password))
             {
                 return new TaiKhoanResponse("Mật khẩu nhập lại không trùng");
             }
-            //Kiem tra username co san trong csdl chua
+
+            // Kiểm tra username đã tồn tại trong CSDL chưa
             TaiKhoan account = await repository.getAccountByUsername(request.username);
 
-            if(account == null) //khong co tai khoan => tien hanh dang ki
+            if (account == null) // Chưa có tài khoản => tiến hành đăng ký
             {
-                TaiKhoan responseAccount = await repository.themTaiKhoan(request.ConvertToTaiKhoan());
+                // Chuyển đổi DTO sang Entity
+                TaiKhoan newAccount = request.ConvertToTaiKhoan();
+
+                // --- MÃ HÓA MẬT KHẨU TRƯỚC KHI LƯU VÀO DATABASE ---
+                newAccount.MatKhau = PasswordHelper.HashPassword(newAccount, request.password);
+
+                TaiKhoan responseAccount = await repository.themTaiKhoan(newAccount);
+
                 return new TaiKhoanResponse(
                     responseAccount.MaTaiKhoan,
                     responseAccount.TenDangNhap,
@@ -42,32 +55,40 @@ namespace QuanLyNhaHang.Service.Implement
                     "[SUCCESS] Đăng kí thành công"
                 );
             }
-            else // da co tai khoan => khong dang ki duoc
+            else // Đã có tài khoản
             {
                 return new TaiKhoanResponse($"Đã có tài khoản {request.username} trong hệ thống!!");
             }
         }
+
         public async Task<TaiKhoanResponse> Login(TaiKhoanRequest request)
         {
-            string username = request.username;
-            string password = request.password;
-            //Kiem tra username, password rong
-            if(username.Trim().Equals(String.Empty) || password.Trim().Equals(String.Empty))
+            string username = request.username ?? string.Empty;
+            string password = request.password ?? string.Empty;
+
+            // Kiểm tra username, password rỗng
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                string message = "Tài khoản hoặc mật khẩu không chính xác";
-                return new TaiKhoanResponse(
-                    message
-                );
+                return new TaiKhoanResponse("Tài khoản hoặc mật khẩu không chính xác");
             }
+
             TaiKhoan account = await repository.getAccountByUsername(username);
 
-            //Tim thay tai khoan, kiem tra mat khau
-            if(account != null)
+            // Tìm thấy tài khoản trong CSDL
+            if (account != null)
             {
-                if (account.MatKhau.Equals(password))
+                // Kiểm tra tài khoản có bị khóa không (Quy định bắt buộc của đề tài)
+                if (!account.TrangThai)
+                {
+                    return new TaiKhoanResponse("Tài khoản của bạn đã bị khóa");
+                }
+
+                // --- KIỂM TRA MẬT KHẨU BẰNG HÀM VERIFY CỦA PASSWORDHELPER ---
+                bool isPasswordValid = PasswordHelper.VerifyPassword(account, account.MatKhau, password);
+
+                if (isPasswordValid)
                 {
                     string message = "[SUCCESS] Đăng nhập thành công";
-                    //Acc dung
                     return new TaiKhoanResponse(
                         account.MaTaiKhoan,
                         account.TenDangNhap,
@@ -81,17 +102,13 @@ namespace QuanLyNhaHang.Service.Implement
                 }
                 else
                 {
-                    string message = "Mật khẩu không chính xác";
-                    TaiKhoanResponse response = new TaiKhoanResponse(message);
-                    return response;
+                    return new TaiKhoanResponse("Mật khẩu không chính xác");
                 }
             }
             else
             {
-                //Acc khong ton tai
-                string message = "Tài khoản không có trong hệ thống";
-                TaiKhoanResponse response = new TaiKhoanResponse(message);
-                return response;
+                // Tài khoản không tồn tại
+                return new TaiKhoanResponse("Tài khoản không có trong hệ thống");
             }
         }
     }

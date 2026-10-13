@@ -2,6 +2,7 @@ using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
+using QuanLyNhaHang.Utils;
 
 namespace QuanLyNhaHang
 {
@@ -15,6 +16,8 @@ namespace QuanLyNhaHang
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<AccountRepository>();
+            builder.Services.AddScoped<LoaiBanRepository>();
+            builder.Services.AddScoped<ILoaiBanService, QuanLyNhaHang.Service.Implement.LoaiBanService>();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(10);
@@ -27,6 +30,7 @@ namespace QuanLyNhaHang
                     builder.Configuration.GetConnectionString("DefaultConnection")
                 );
             });
+            
             var app = builder.Build();
             // Vi Thái Học - 23103100054: chỉ seed Module 2 khi được gọi rõ ràng.
             if (args.Contains("--seed-ban-an"))
