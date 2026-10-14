@@ -3,11 +3,22 @@
    Nội dung thực hiện: Giao diện xem chi tiết bàn ăn và tên loại bàn. *@
 @model QuanLyNhaHangNhom3_Uneti.Models.BanAn
 @using QuanLyNhaHang.Filters
-@{ ViewData["Title"] = "Chi tiết bàn ăn"; }
-<h1>Chi tiết bàn ăn</h1>
+@{
+    ViewData["Title"] = "Chi tiết bàn ăn";
+    var isAdmin = Module2AdminAttribute.IsAdmin(Context.Session);
+    Layout = isAdmin ? "/Views/Shared/AdminLayout.cshtml" : "/Views/Shared/ClientLayout.cshtml";
+}
+@section Styles {
+    @if (!isAdmin) {
+        <link rel="stylesheet" href="~/css/ban-an-client.css" asp-append-version="true" />
+    }
+}
+<section class="@(!isAdmin ? "ban-an-client" : null)">
+@if (!isAdmin) { <h1>Chi tiết bàn ăn</h1> }
 <partial name="_Details" model="Model" />
 @if (Module2AdminAttribute.IsAdmin(Context.Session)) {
     <a asp-action="Edit" asp-route-id="@Model.MaBan" class="btn btn-primary">Sửa bàn</a>
 }
 <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách</a>
+</section>
 

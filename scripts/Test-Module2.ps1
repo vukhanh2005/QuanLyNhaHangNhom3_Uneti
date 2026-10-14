@@ -31,6 +31,8 @@ $projectText = @'
     <Compile Include="../../ViewModels/BanAnIndexViewModel.cs" />
     <Compile Include="../../Queries/BanAnQueryExtensions.cs" />
     <Compile Include="../../Filters/Module2AdminAttribute.cs" />
+    <Compile Include="../../Filters/Module2SessionAttribute.cs" />
+    <Compile Include="../../Helpers/PasswordHelper.cs" />
   </ItemGroup>
 </Project>
 '@

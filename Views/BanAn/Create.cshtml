@@ -3,7 +3,6 @@
    Nội dung thực hiện: Giao diện thêm bàn ăn và hiển thị lỗi validation. *@
 @model QuanLyNhaHang.ViewModels.BanAnFormViewModel
 @{ ViewData["Title"] = "Thêm bàn ăn"; }
-<h1>Thêm bàn ăn</h1>
 <form asp-action="Create" method="post">
     <partial name="_Form" model="Model" />
     <div class="mt-4">
@@ -12,4 +11,3 @@
     </div>
 </form>
 @section Scripts { <partial name="_ValidationScriptsPartial" /> }
-

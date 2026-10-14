@@ -12,6 +12,7 @@ using QuanLyNhaHangNhom3_Uneti.Models;
 
 namespace QuanLyNhaHang.Controllers;
 
+[Module2Session]
 public class BanAnController(AppDbContext context) : Controller
 {
     public async Task<IActionResult> Index(string? keyword, int? maLoaiBan, int? soChoNgoi,
@@ -30,7 +31,7 @@ public class BanAnController(AppDbContext context) : Controller
             .OrderBy(x => x).ToListAsync(cancellationToken);
         if (soChoNgoi.HasValue && !model.SoChoOptions.Contains(soChoNgoi.Value))
             model.SoChoOptions = model.SoChoOptions.Append(soChoNgoi.Value).OrderBy(x => x).ToList();
-        return View(model);
+        return View(Module2AdminAttribute.IsAdmin(HttpContext.Session) ? "Admin" : "Client", model);
     }
 
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)

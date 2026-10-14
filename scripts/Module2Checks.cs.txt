@@ -81,6 +81,26 @@ session.SetString("VaiTro", "Admin");
 Check(Module2AdminAttribute.IsAdmin(session), "Admin allowed");
 session.Clear(); session.SetString("VaiTro", "Admin");
 Check(!Module2AdminAttribute.IsAdmin(session), "Role without account denied");
+Microsoft.AspNetCore.Mvc.IActionResult? AuthorizeSession()
+{
+    var http = new DefaultHttpContext { Session = session };
+    var action = new Microsoft.AspNetCore.Mvc.ActionContext(http, new Microsoft.AspNetCore.Routing.RouteData(),
+        new Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor());
+    var authorization = new Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext(action,
+        new List<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>());
+    new Module2SessionAttribute().OnAuthorization(authorization);
+    return authorization.Result;
+}
+Check(AuthorizeSession() is Microsoft.AspNetCore.Mvc.RedirectToActionResult { ActionName: "Login", ControllerName: "Account" },
+    "Session missing account redirects to login");
+session.SetInt32("MaTaiKhoan", 1); session.Remove("VaiTro");
+Check(AuthorizeSession() is Microsoft.AspNetCore.Mvc.StatusCodeResult { StatusCode: 403 }, "Session missing role denied");
+session.SetString("VaiTro", "Unknown");
+Check(AuthorizeSession() is Microsoft.AspNetCore.Mvc.StatusCodeResult { StatusCode: 403 }, "Unknown role denied");
+session.SetString("VaiTro", "User");
+Check(AuthorizeSession() is null, "User session can browse");
+session.SetString("VaiTro", "Admin");
+Check(AuthorizeSession() is null, "Admin session can browse");
 Console.WriteLine($"{count} checks passed. Database integration is not covered by these checks.");
 if (Environment.GetEnvironmentVariable("MODULE2_SQL_TESTS") == "1")
     await Module2SqlChecks.RunAsync();

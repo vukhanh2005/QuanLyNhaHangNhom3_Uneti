@@ -1,6 +1,8 @@
 <!-- Vi Thái Học - 23103100054: Hướng dẫn Module 2 -->
 # Module 2 — Quản lý và tra cứu bàn ăn
 
+> Cập nhật 14/10/2026: đã tích hợp Session và hai layout theo video. Xem [đối chiếu video, kiểm thử và hạn chế database hiện tại](Module2-Video-1013.md). Các kết quả 70 kiểm thử và trạng thái Git bên dưới là ghi nhận của lần tích hợp trước.
+
 ## 1. Kiến trúc và liên kết
 Đã nối Controller/Razor với EF Core/SQL Server. Dùng nguyên LoaiBan của Module 1 và Session MaTaiKhoan (int), VaiTro (string Admin/User). Không sửa entity hoặc nghiệp vụ đăng nhập của nhóm. Chưa có PhieuDatBan để kiểm thử lịch sử đặt bàn.
 
@@ -20,7 +22,7 @@ FILE DÙNG CHUNG – CẦN TRAO ĐỔI VỚI NHÓM TRƯỚC KHI MERGE:
 Form chứa các trường được sửa và dropdown. MaBan chỉ phục vụ URL; POST Edit lấy id từ route và không đổi khóa chính entity. Index giữ điều kiện tra cứu và thông tin trang, PageSize = 5.
 
 ## 5. CRUD và phân quyền
-GET Index/Details cho phép xem. GET/POST Create/Edit/Delete kiểm tra Admin tại máy chủ; POST có anti-forgery. Kiểm tra tên trùng bằng AnyAsync, Edit loại trừ chính id; kiểm tra LoaiBan tồn tại và tải lại dropdown khi lỗi. Unique index bảo vệ lưu trùng đồng thời. Edit cho phép đổi trạng thái. Delete GET không xóa; POST chặn bàn đang sử dụng và xử lý lỗi FK. Chưa có rowversion chống hai người sửa cùng lúc.
+GET Index/Details yêu cầu đăng nhập. Index trả view Admin hoặc Client theo Session; Details dùng layout tương ứng. GET/POST Create/Edit/Delete kiểm tra Admin tại máy chủ; POST có anti-forgery. Kiểm tra tên trùng bằng AnyAsync, Edit loại trừ chính id; kiểm tra LoaiBan tồn tại và tải lại dropdown khi lỗi. Unique index bảo vệ lưu trùng đồng thời. Edit cho phép đổi trạng thái. Delete GET không xóa; POST chặn bàn đang sử dụng và xử lý lỗi FK. Chưa có rowversion chống hai người sửa cùng lúc.
 
 Khi Module 3 thêm PhieuDatBan: thêm navigation, FK Restrict và AnyAsync kiểm tra lịch sử trước Delete. Không tạo entity giả, không tự đổi trạng thái khi tạo phiếu.
 
