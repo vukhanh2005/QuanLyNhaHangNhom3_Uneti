@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.Helpers;
 using QuanLyNhaHang.Models;
 
 namespace QuanLyNhaHang.Utils;
@@ -20,12 +21,14 @@ public static class AccountSeeder
         var account = new TaiKhoan
         {
             TenDangNhap = username.Trim(),
-            MatKhau = password,
+            MatKhau = string.Empty,
             HoTen = hoTen.Trim(),
             Email = email.Trim(),
             VaiTro = vaiTro,
             TrangThai = true
         };
+
+        account.MatKhau = PasswordHelper.HashPassword(account, password);
 
         foreach (var property in new[] { nameof(TaiKhoan.TenDangNhap), nameof(TaiKhoan.MatKhau),
             nameof(TaiKhoan.HoTen), nameof(TaiKhoan.Email) })
