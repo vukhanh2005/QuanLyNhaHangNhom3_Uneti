@@ -22,7 +22,7 @@ namespace QuanLyNhaHang.Models
         [StringLength(50)]
         public string? TenDangNhap { get; set; }
         [Required]
-        [StringLength(50)]
+        [StringLength(250)]
         public string? MatKhau { get; set; }
         [Required]
         [StringLength(250)]
