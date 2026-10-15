@@ -1,0 +1,27 @@
+@model QuanLyNhaHang.DTO.LoaiBanResponse
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    var deleting = ViewData["ConfirmDelete"] is true;
+    ViewData["Title"] = deleting ? "Xóa loại bàn" : "Chi tiết loại bàn";
+}
+<section class="admin-panel p-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <dl>
+        <dt>Tên loại bàn</dt><dd>@Model.TenLoaiBan</dd>
+        <dt>Mô tả</dt><dd class="text-break">@(string.IsNullOrEmpty(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)</dd>
+        <dt>Trạng thái</dt><dd>@(Model.TrangThai ? "Hoạt động" : "Ngừng hoạt động")</dd>
+    </dl>
+    @if (deleting)
+    {
+        <p class="text-danger">Bạn có chắc muốn xóa loại bàn này? Thao tác không thể hoàn tác.</p>
+        <form asp-action="Xoa" asp-route-id="@Model.MaLoaiBan" method="post">
+            <button class="btn btn-danger" type="submit">Xác nhận xóa</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+        </form>
+    }
+    else
+    {
+        <a class="btn btn-success" asp-action="Sua" asp-route-id="@Model.MaLoaiBan">Sửa</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+    }
+</section>

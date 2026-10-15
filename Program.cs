@@ -1,4 +1,8 @@
+using Azure;
 using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.Models;
+using QuanLyNhaHang.Repository;
+using QuanLyNhaHang.Utils;
 
 namespace QuanLyNhaHang
 {
@@ -11,10 +15,12 @@ namespace QuanLyNhaHang
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
-
+            builder.Services.AddScoped<AccountRepository>();
+            builder.Services.AddScoped<LoaiBanRepository>();
+            builder.Services.AddScoped<ILoaiBanService, QuanLyNhaHang.Service.Implement.LoaiBanService>();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -24,21 +30,22 @@ namespace QuanLyNhaHang
                     builder.Configuration.GetConnectionString("DefaultConnection")
                 );
             });
+            
             var app = builder.Build();
-            app.UseSession();
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseRouting();
+            app.UseSession();
 
             app.UseAuthorization();
 
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=MonAn}/{action=Index}/{id?}")
+                pattern: "{controller=TrangChu}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();

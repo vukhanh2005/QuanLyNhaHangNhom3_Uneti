@@ -1,0 +1,92 @@
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+    <style>
+        html{
+            width: auto;
+            width: auto;
+        }
+        .wrapper-login-form{
+            border: 2px solid black;
+            padding: 10px;
+            width: fit-content;
+        }
+        body{
+            width: 100%;
+            height: 100vh;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+        }
+        .input-box{
+            padding: 5px;
+        }
+        .button-box{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .message-section{
+            color: red;
+        }
+        .success-message{
+            color: green;
+        }
+        .fail-message{
+            color: red;
+        }
+        .login-form{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+   <div class="wrapper-login-form">
+    <form class="login-form" method="post"s>
+        <div class="title-login-form">
+            <p>NHA HANG KNEE GA</p>
+        </div>
+        <div class="input-box">
+            <input placeholder="Username...." name="username"/>
+        </div>
+        <div class="input-box">
+            <input placeholder="Password...."name="password"/>
+        </div>
+        <div class="button-box">
+            <button asp-controller="Account" asp-action="Login">Đăng nhập</button>
+            <a asp-controller="Account" asp-action="Register">Đăng Kí</a>
+        </div>
+            @{
+                if(ViewBag.SuccessMessage != null)
+                {
+                    <p class="success-message">
+                        Đăng nhập thành công!!!!!
+                    </p>
+                    <script>
+                        window.location.href = '@Url.Action("Index", "TrangChu")'
+                    </script>
+                }
+                if(ViewBag.FailMessage != null)
+                {
+                    <p class="fail-message">
+                        Đăng nhập thất bại: @ViewBag.FailMessage
+                    </p>
+                }
+            }
+    </form>
+   </div>
+</body>
+</html>

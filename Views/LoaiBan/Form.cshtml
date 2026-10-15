@@ -1,0 +1,29 @@
+@model QuanLyNhaHang.DTO.LoaiBanRequest
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    var editing = ViewData["Id"] is int;
+    ViewData["Title"] = editing ? "Sửa loại bàn" : "Thêm loại bàn";
+}
+<form asp-action="@(editing ? "Sua" : "Them")" asp-route-id="@ViewData["Id"]" method="post" class="admin-panel p-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <div class="mb-3">
+        <label asp-for="TenLoaiBan" class="form-label"></label>
+        <input asp-for="TenLoaiBan" class="form-control" maxlength="100" />
+        <span asp-validation-for="TenLoaiBan" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="MoTa" class="form-label"></label>
+        <textarea asp-for="MoTa" class="form-control" rows="4" maxlength="500"></textarea>
+        <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="TrangThai" class="form-label"></label>
+        <select asp-for="TrangThai" class="form-select"><option value="true">Hoạt động</option><option value="false">Ngừng hoạt động</option></select>
+        <span asp-validation-for="TrangThai" class="text-danger"></span>
+    </div>
+    <button class="btn btn-success" type="submit">Lưu loại bàn</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
