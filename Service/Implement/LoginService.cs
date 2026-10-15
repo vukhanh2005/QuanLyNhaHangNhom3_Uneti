@@ -2,12 +2,14 @@ using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Helpers;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyNhaHang.Service.Implement
 {
     public class LoginService : ILoginService
     {
         AccountRepository repository;
+        private readonly KhachHangService khachHangService = new KhachHangService();
         public LoginService(AccountRepository repository)
         {
             this.repository = repository;
@@ -20,10 +22,29 @@ namespace QuanLyNhaHang.Service.Implement
                 string.IsNullOrWhiteSpace(request.username) ||
                 string.IsNullOrWhiteSpace(request.password) ||
                 string.IsNullOrWhiteSpace(request.confirmPassword) ||
-                string.IsNullOrWhiteSpace(request.email))
+                string.IsNullOrWhiteSpace(request.email) ||
+                string.IsNullOrWhiteSpace(request.soDienThoai) ||
+                string.IsNullOrWhiteSpace(request.diaChi) ||
+                !request.ngaySinh.HasValue || !request.gioiTinh.HasValue)
             {
                 return new TaiKhoanResponse("Dữ liệu không được để trống");
             }
+
+            request.username = request.username.Trim();
+            request.hoTen = request.hoTen.Trim();
+            request.email = request.email.Trim();
+
+            if (request.username.Length > 50 || request.hoTen.Length > 250 || request.email.Length > 50)
+                return new TaiKhoanResponse("Tên đăng nhập/email tối đa 50 ký tự, họ tên tối đa 250 ký tự.");
+
+            if (!new EmailAddressAttribute().IsValid(request.email))
+                return new TaiKhoanResponse("Email không hợp lệ.");
+
+            if (!new PhoneAttribute().IsValid(request.soDienThoai.Trim()))
+                return new TaiKhoanResponse("Số điện thoại không hợp lệ.");
+
+            if (request.ngaySinh.Value.Date > DateTime.Today || request.ngaySinh.Value == DateTime.MinValue)
+                return new TaiKhoanResponse("Ngày sinh không hợp lệ.");
 
             // Kiểm tra nhập lại mật khẩu có trùng khớp không
             if (!request.confirmPassword.Equals(request.password))
@@ -38,10 +59,13 @@ namespace QuanLyNhaHang.Service.Implement
             {
                 // Chuyển đổi DTO sang Entity
                 TaiKhoan newAccount = request.ConvertToTaiKhoan();
+                newAccount.KhachHang = khachHangService.TaoKhachHang(request);
 
                 // --- MÃ HÓA MẬT KHẨU TRƯỚC KHI LƯU VÀO DATABASE ---
                 newAccount.MatKhau = PasswordHelper.HashPassword(newAccount, request.password);
 
+                // EF lưu tài khoản và khách hàng trong cùng một SaveChanges/transaction,
+                // tự gán MaTaiKhoan cho khách hàng sau khi tạo tài khoản.
                 TaiKhoan responseAccount = await repository.themTaiKhoan(newAccount);
 
                 return new TaiKhoanResponse(

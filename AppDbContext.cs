@@ -6,6 +6,8 @@ public class AppDbContext : DbContext
     public DbSet<TaiKhoan> TaiKhoans { get; set; }
     public DbSet<LoaiBan> LoaiBans { get; set; }
     public DbSet<MonAn> MonAn { get; set; }
+    public DbSet<KhachHang> KhachHangs { get; set; }
+    //public DbSet<PhieuDatBan> PhieuDatBans { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -16,4 +18,4 @@ public class AppDbContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
     }
-}
+}

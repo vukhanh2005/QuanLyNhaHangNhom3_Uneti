@@ -10,6 +10,10 @@ namespace QuanLyNhaHang.DTO
         public string confirmPassword { get; set; }
         public string email { get; set; }
         public string hoTen { get; set; }
+        public DateTime? ngaySinh { get; set; }
+        public bool? gioiTinh { get; set; }
+        public string soDienThoai { get; set; } = string.Empty;
+        public string diaChi { get; set; } = string.Empty;
 
         public TaiKhoan ConvertToTaiKhoan()
         {

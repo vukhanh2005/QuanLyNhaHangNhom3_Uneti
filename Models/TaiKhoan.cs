@@ -31,10 +31,12 @@ namespace QuanLyNhaHang.Models
         [StringLength(50)]
         [EmailAddress]
         public string? Email { get; set; }
-        [StringLength(50)]
+
         [Required]
         public VaiTro VaiTro { get; set; }
+       
         [Required]
         public bool TrangThai { get; set; }
+        public KhachHang? KhachHang { get; set; }
     }
 }
