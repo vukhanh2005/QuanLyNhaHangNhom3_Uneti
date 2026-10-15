@@ -11,6 +11,9 @@ public class AppDbContext : DbContext{
         : base(options)
     {
     }
+    public DbSet<TaiKhoan> TaiKhoans { get; set; }
+
+    public DbSet<MonAn> MonAn { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
