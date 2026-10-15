@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace QuanLyNhaHang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261010202846_NVKMigration")]
-    partial class NVKMigration
+    [Migration("20261015002028_IncreasePasswordHashLength")]
+    partial class IncreasePasswordHashLength
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,13 +63,13 @@ namespace QuanLyNhaHang.Migrations
 
                     b.Property<string>("HoTen")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("MatKhau")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("TenDangNhap")
                         .IsRequired()

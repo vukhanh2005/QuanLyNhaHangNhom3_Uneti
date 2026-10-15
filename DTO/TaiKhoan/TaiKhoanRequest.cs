@@ -1,5 +1,4 @@
 ﻿using QuanLyNhaHang.Models;
-using QuanLyNhaHang.Helpers;
 
 namespace QuanLyNhaHang.DTO
 {
@@ -16,10 +15,8 @@ namespace QuanLyNhaHang.DTO
             TaiKhoan rs = new TaiKhoan();
             rs.TenDangNhap = username;
 
-            //  MÃ HÓA MẬT KHẨU TẠI ĐÂY 
-            rs.MatKhau = !string.IsNullOrEmpty(password)
-                         ? PasswordHelper.HashPassword(rs, password)
-                         : string.Empty;
+            // LoginService hashes password once before storing the account.
+            rs.MatKhau = password;
 
             rs.HoTen = hoTen;
             rs.TrangThai = true;
