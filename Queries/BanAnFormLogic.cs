@@ -30,9 +30,19 @@ public static class BanAnFormLogic
             return;
         }
 
-        if (await context.BanAns.AnyAsync(x => x.TenBan == model.TenBan
-            && (!currentId.HasValue || x.MaBan != currentId.Value), cancellationToken))
+        var cacBanCungTen = context.BanAns.Where(x => x.TenBan == model.TenBan);
+
+        // Khi sửa, không coi chính bàn đang sửa là một bàn trùng tên.
+        if (currentId.HasValue)
+        {
+            cacBanCungTen = cacBanCungTen.Where(x => x.MaBan != currentId.Value);
+        }
+
+        bool trungTen = await cacBanCungTen.AnyAsync(cancellationToken);
+        if (trungTen)
+        {
             modelState.AddModelError(nameof(model.TenBan), "Tên bàn đã tồn tại.");
+        }
     }
 
     // Chỉ gán các trường cho phép sửa; không bao giờ gán MaBan từ dữ liệu gửi lên.
@@ -47,14 +57,17 @@ public static class BanAnFormLogic
         entity.TrangThai = model.TrangThai;
     }
 
-    public static BanAnFormViewModel FromEntity(BanAn entity) => new()
+    public static BanAnFormViewModel FromEntity(BanAn entity)
     {
-        MaBan = entity.MaBan,
-        TenBan = entity.TenBan,
-        MaLoaiBan = entity.MaLoaiBan,
-        SoChoNgoi = entity.SoChoNgoi,
-        ViTri = entity.ViTri,
-        MoTa = entity.MoTa,
-        TrangThai = entity.TrangThai
-    };
+        return new BanAnFormViewModel
+        {
+            MaBan = entity.MaBan,
+            TenBan = entity.TenBan,
+            MaLoaiBan = entity.MaLoaiBan,
+            SoChoNgoi = entity.SoChoNgoi,
+            ViTri = entity.ViTri,
+            MoTa = entity.MoTa,
+            TrangThai = entity.TrangThai
+        };
+    }
 }

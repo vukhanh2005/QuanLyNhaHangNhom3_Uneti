@@ -15,11 +15,23 @@ public static class BanAnPagination
     {
         model.Keyword = model.Keyword?.Trim();
         var query = source.AsNoTracking().TraCuu(model);
+        // Đếm sau khi lọc để tính đúng số trang của kết quả tìm kiếm.
         model.TotalCount = await query.CountAsync(cancellationToken);
-        model.CurrentPage = Math.Clamp(page, 1, model.TotalPages);
+        if (page < 1)
+        {
+            page = 1;
+        }
+        if (page > model.TotalPages)
+        {
+            page = model.TotalPages;
+        }
+        model.CurrentPage = page;
+
+        // Ví dụ: trang 2, mỗi trang 5 bàn → bỏ 5 bàn đầu, lấy 5 bàn tiếp theo.
+        int soBanBoQua = (model.CurrentPage - 1) * model.PageSize;
         // Chỉ tải tối đa PageSize bản ghi; không ToList trước Skip/Take.
         model.BanAns = await query
-            .Skip((model.CurrentPage - 1) * model.PageSize)
+            .Skip(soBanBoQua)
             .Take(model.PageSize)
             .ToListAsync(cancellationToken);
     }

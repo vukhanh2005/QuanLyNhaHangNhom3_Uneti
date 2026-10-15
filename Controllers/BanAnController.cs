@@ -13,36 +13,71 @@ using QuanLyNhaHangNhom3_Uneti.Models;
 namespace QuanLyNhaHang.Controllers;
 
 [Module2Session]
-public class BanAnController(AppDbContext context) : Controller
+public class BanAnController : Controller
 {
+    private readonly AppDbContext context;
+
+    public BanAnController(AppDbContext context)
+    {
+        this.context = context;
+    }
+
+    // GET: đọc điều kiện trên URL, truy vấn dữ liệu rồi chọn giao diện theo vai trò.
     public async Task<IActionResult> Index(string? keyword, int? maLoaiBan, int? soChoNgoi,
         string? trangThai, string? sortOrder, int page = 1, CancellationToken cancellationToken = default)
     {
+        // 1. Nếu kiểu sắp xếp không hợp lệ, mặc định tên bàn A → Z.
+        if (sortOrder != "name_desc" && sortOrder != "seat_asc" && sortOrder != "seat_desc")
+        {
+            sortOrder = "name_asc";
+        }
+
         var model = new BanAnIndexViewModel
         {
-            Keyword = keyword?.Trim(), MaLoaiBan = maLoaiBan, SoChoNgoi = soChoNgoi,
+            Keyword = keyword?.Trim(),
+            MaLoaiBan = maLoaiBan,
+            SoChoNgoi = soChoNgoi,
             TrangThai = trangThai,
-            SortOrder = sortOrder is "name_desc" or "seat_asc" or "seat_desc" ? sortOrder : "name_asc",
+            SortOrder = sortOrder,
             LoaiBanOptions = await LoaiBanOptionsAsync(cancellationToken)
         };
+        // 2. Include lấy tên loại bàn. Hàm phân trang xử lý tìm kiếm → lọc → sắp xếp → Skip/Take.
         await BanAnPagination.LoadPageAsync(context.BanAns.Include(x => x.LoaiBan),
             model, page, cancellationToken);
+        // 3. Lấy các số chỗ khác nhau để hiển thị bộ lọc.
         model.SoChoOptions = await context.BanAns.Select(x => x.SoChoNgoi).Distinct()
             .OrderBy(x => x).ToListAsync(cancellationToken);
         if (soChoNgoi.HasValue && !model.SoChoOptions.Contains(soChoNgoi.Value))
+        {
+            // Giữ lựa chọn trên URL ngay cả khi không có bàn phù hợp.
             model.SoChoOptions = model.SoChoOptions.Append(soChoNgoi.Value).OrderBy(x => x).ToList();
-        return View(Module2AdminAttribute.IsAdmin(HttpContext.Session) ? "Admin" : "Client", model);
+        }
+
+        // 4. Cùng dữ liệu tra cứu, nhưng mỗi vai trò nhận một giao diện riêng.
+        if (Module2AdminAttribute.IsAdmin(HttpContext.Session))
+        {
+            return View("Admin", model);
+        }
+        return View("Client", model);
     }
 
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(id, cancellationToken);
-        return entity is null ? NotFound() : View(entity);
+        if (entity == null)
+        {
+            return NotFound();
+        }
+        return View(entity);
     }
 
     [Module2Admin]
-    public async Task<IActionResult> Create(CancellationToken cancellationToken) =>
-        View(new BanAnFormViewModel { LoaiBanOptions = await LoaiBanOptionsAsync(cancellationToken) });
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
+    {
+        var model = new BanAnFormViewModel();
+        model.LoaiBanOptions = await LoaiBanOptionsAsync(cancellationToken);
+        return View(model);
+    }
 
     [HttpPost, Module2Admin, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BanAnFormViewModel model, CancellationToken cancellationToken)
@@ -99,7 +134,11 @@ public class BanAnController(AppDbContext context) : Controller
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(id, cancellationToken);
-        return entity is null ? NotFound() : View(entity);
+        if (entity == null)
+        {
+            return NotFound();
+        }
+        return View(entity);
     }
 
     [HttpPost, ActionName("Delete"), Module2Admin, ValidateAntiForgeryToken]
@@ -133,14 +172,19 @@ public class BanAnController(AppDbContext context) : Controller
         }
     }
 
-    private Task<BanAn?> FindAsync(int id, CancellationToken cancellationToken) =>
-        context.BanAns.AsNoTracking().Include(x => x.LoaiBan)
+    // Chỉ đọc dữ liệu nên không cần EF theo dõi thay đổi (AsNoTracking).
+    private async Task<BanAn?> FindAsync(int id, CancellationToken cancellationToken)
+    {
+        return await context.BanAns.AsNoTracking().Include(x => x.LoaiBan)
             .FirstOrDefaultAsync(x => x.MaBan == id, cancellationToken);
+    }
 
-    private async Task<List<SelectListItem>> LoaiBanOptionsAsync(CancellationToken cancellationToken) =>
-        await context.LoaiBans.AsNoTracking().OrderBy(x => x.TenLoaiBan)
+    private async Task<List<SelectListItem>> LoaiBanOptionsAsync(CancellationToken cancellationToken)
+    {
+        return await context.LoaiBans.AsNoTracking().OrderBy(x => x.TenLoaiBan)
             .Select(x => new SelectListItem(x.TenLoaiBan, x.MaLoaiBan.ToString()))
             .ToListAsync(cancellationToken);
+    }
 
     private async Task ValidateFormAsync(BanAnFormViewModel model, int? currentId,
         CancellationToken cancellationToken)

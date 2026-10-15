@@ -10,13 +10,19 @@ namespace QuanLyNhaHang.Filters;
 // Không đọc quyền từ form/query string và không cung cấp đăng nhập giả.
 public sealed class Module2AdminAttribute : Attribute, IAuthorizationFilter
 {
-    public static bool IsAdmin(ISession session) =>
-        session.GetInt32("MaTaiKhoan") is > 0 && session.GetString("VaiTro") == "Admin";
+    public static bool IsAdmin(ISession session)
+    {
+        int? maTaiKhoan = session.GetInt32("MaTaiKhoan");
+        string? vaiTro = session.GetString("VaiTro");
+        return maTaiKhoan.HasValue && maTaiKhoan.Value > 0 && vaiTro == "Admin";
+    }
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         if (!IsAdmin(context.HttpContext.Session))
+        {
             context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+        }
     }
 }
 

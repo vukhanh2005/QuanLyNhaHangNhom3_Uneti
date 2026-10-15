@@ -8,14 +8,24 @@ namespace QuanLyNhaHang.Filters;
 
 public sealed class Module2SessionAttribute : Attribute, IAuthorizationFilter, IOrderedFilter
 {
+    // Kiểm tra đăng nhập trước filter kiểm tra quyền Admin.
     public int Order => -1000;
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         var session = context.HttpContext.Session;
-        if (session.GetInt32("MaTaiKhoan") is not > 0)
+        int? maTaiKhoan = session.GetInt32("MaTaiKhoan");
+        string? vaiTro = session.GetString("VaiTro");
+
+        if (!maTaiKhoan.HasValue || maTaiKhoan.Value <= 0)
+        {
             context.Result = new RedirectToActionResult("Login", "Account", null);
-        else if (session.GetString("VaiTro") is not ("Admin" or "User"))
+            return;
+        }
+
+        if (vaiTro != "Admin" && vaiTro != "User")
+        {
             context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+        }
     }
 }
