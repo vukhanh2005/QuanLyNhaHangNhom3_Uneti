@@ -1,0 +1,305 @@
+// Họ và tên: Vi Thái Học
+// Mã sinh viên: 23103100054
+// Nội dung thực hiện: Kiểm thử tích hợp CRUD, phân trang, phân quyền và HTTP trên database riêng.
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.Controllers;
+using QuanLyNhaHang.Data;
+using QuanLyNhaHang.Models;
+using QuanLyNhaHang.ViewModels;
+using QuanLyNhaHangNhom3_Uneti.Models;
+using System.ComponentModel.DataAnnotations;
+
+static class Module2SqlChecks
+{
+    public static async Task RunAsync()
+    {
+        var database = "QuanLyNhaHang_Module2Test_" + Guid.NewGuid().ToString("N");
+        var connection = $"Server=(localdb)\\MSSQLLocalDB;Database={database};Trusted_Connection=True;TrustServerCertificate=True";
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options;
+        var checks = 0;
+        void Check(bool condition, string name)
+        {
+            if (!condition) throw new Exception(name);
+            Console.WriteLine("SQL PASS " + name); checks++;
+        }
+        AppDbContext Db() => new(options);
+        BanAnController Controller(AppDbContext db)
+        {
+            var http = new DefaultHttpContext();
+            http.Session = new MemorySession();
+            http.Session.SetInt32("MaTaiKhoan", 1);
+            http.Session.SetString("VaiTro", "Admin");
+            return new BanAnController(db)
+            {
+                ControllerContext = new ControllerContext { HttpContext = http },
+                TempData = new TempDataDictionary(http, new TestTempDataProvider())
+            };
+        }
+        BanAnFormViewModel Form(string name, int type) => new()
+        {
+            TenBan = name, MaLoaiBan = type, SoChoNgoi = 4, ViTri = "Tầng 2",
+            TrangThai = BanAnTrangThai.SanSang
+        };
+        // Chỉ tạo/xóa database kiểm thử mang GUID do chính lần chạy này sinh ra.
+        await using var setup = Db();
+        try
+        {
+            if (Environment.GetEnvironmentVariable("MODULE2_CURRENT_MODEL_TESTS") == "1")
+            {
+                // Chỉ dành cho database test GUID: tách kiểm thử Module 2 khỏi migration đang xung đột.
+                // Không chứng minh chuỗi migration hiện tại chạy được.
+                await setup.Database.EnsureCreatedAsync();
+                Console.WriteLine("TEST FIXTURE: current model, migrations not exercised.");
+            }
+            else
+                await setup.Database.MigrateAsync();
+            setup.LoaiBans.AddRange(Enumerable.Range(1,4).Select(i => new LoaiBan { TenLoaiBan = $"Loại kiểm thử {i}" }));
+            await setup.SaveChangesAsync();
+            var type = await setup.LoaiBans.Select(x => x.MaLoaiBan).FirstAsync();
+            Check(await BanAnSeeder.SeedAsync(setup) == 20, "Seed 20 tables");
+            Check(await BanAnSeeder.SeedAsync(setup) == 0, "Seed is repeatable");
+            // Dữ liệu test riêng giúp kiểm tra tổ hợp còn nhiều trang sau khi lọc.
+            setup.BanAns.AddRange(Enumerable.Range(1,12).Select(i => new BanAn
+            {
+                TenBan = $"Test {i:00}", MaLoaiBan = type, SoChoNgoi = 4,
+                ViTri = "Tầng 2", TrangThai = BanAnTrangThai.SanSang
+            }));
+            await setup.SaveChangesAsync();
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                var result = (ViewResult)await controller.Index(" Test ", type, 4, BanAnTrangThai.SanSang, "name_desc", 2);
+                var page = (BanAnIndexViewModel)result.Model!;
+                Check(result.ViewName == "Admin", "Admin session selects Admin view");
+                controller.HttpContext.Session.SetString("VaiTro", "User");
+                Check(((ViewResult)await controller.Index(null,null,null,null,null)).ViewName == "Client",
+                    "User session selects Client view");
+                Check(page.TotalCount == 12 && page.CurrentPage == 2 && page.TotalPages == 3
+                    && page.BanAns.Select(x => x.TenBan).SequenceEqual(new[]{"Test 07","Test 06","Test 05","Test 04","Test 03"}),
+                    "Search filter sort second page and Include");
+                Check(page.BanAns.All(x => x.LoaiBan.TenLoaiBan.StartsWith("Loại")), "Table type names loaded");
+                var end = (BanAnIndexViewModel)((ViewResult)await controller.Index("Test", type, 4, BanAnTrangThai.SanSang, "name_desc", 999)).Model!;
+                Check(end.CurrentPage == 3 && end.BanAns.Count == 2, "Clamp past last page");
+                var start = (BanAnIndexViewModel)((ViewResult)await controller.Index(null,null,null,null,null,-1)).Model!;
+                Check(start.CurrentPage == 1 && start.BanAns.Count == 5, "Clamp negative page");
+                var empty = (BanAnIndexViewModel)((ViewResult)await controller.Index("missing",null,null,null,null,2)).Model!;
+                Check(empty.CurrentPage == 1 && empty.TotalPages == 1 && empty.BanAns.Count == 0, "Empty results");
+            }
+            int id;
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                Check(await controller.Create(Form("New table", type), default) is RedirectToActionResult, "Create valid");
+                id = await db.BanAns.Where(x => x.TenBan == "New table").Select(x => x.MaBan).SingleAsync();
+            }
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                var result = await controller.Create(Form("  New table  ", type), default);
+                Check(result is ViewResult && controller.ModelState.ContainsKey("TenBan"), "Duplicate create blocked");
+                Check(((BanAnFormViewModel)((ViewResult)result).Model!).LoaiBanOptions.Count() == 4, "Options retained on error");
+            }
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                Check(await controller.Create(Form("Bad FK", int.MaxValue), default) is ViewResult
+                    && controller.ModelState.ContainsKey("MaLoaiBan"), "Missing type rejected");
+            }
+            foreach (var seats in new[] {0,-1})
+            {
+                await using var db = Db();
+                var controller = Controller(db);
+                var form = Form("Bad seats", type); form.SoChoNgoi = seats;
+                var errors = new List<ValidationResult>();
+                Validator.TryValidateObject(form, new ValidationContext(form), errors, true);
+                foreach (var error in errors) foreach(var member in error.MemberNames)
+                    controller.ModelState.AddModelError(member, error.ErrorMessage!);
+                Check(await controller.Create(form, default) is ViewResult && !await db.BanAns.AnyAsync(x => x.TenBan == "Bad seats"),
+                    $"Invalid seats {seats} not saved");
+            }
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                var form = Form("New table", type); form.MaBan = 99999;
+                Check(await controller.Edit(id, form, default) is RedirectToActionResult
+                    && await db.BanAns.AnyAsync(x => x.MaBan == id && x.TenBan == "New table"), "Edit excludes self and preserves key");
+            }
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                Check(await controller.Edit(id, Form("Test 01",type), default) is ViewResult
+                    && controller.ModelState.ContainsKey("TenBan"), "Duplicate edit blocked");
+                Check(await controller.Details(int.MaxValue, default) is NotFoundResult, "Missing details returns 404");
+            }
+            await using (var db = Db())
+            {
+                var controller = Controller(db);
+                Check(await controller.Delete(id, default) is ViewResult && await db.BanAns.AnyAsync(x => x.MaBan == id), "Delete GET does not mutate");
+                Check(await controller.DeleteConfirmed(id, default) is RedirectToActionResult && !await db.BanAns.AnyAsync(x => x.MaBan == id), "Delete confirmed");
+            }
+            await using (var db = Db())
+            {
+                var busy = await db.BanAns.FirstAsync(x => x.TrangThai == BanAnTrangThai.DangSuDung);
+                var controller = Controller(db);
+                Check(await controller.DeleteConfirmed(busy.MaBan, default) is ViewResult && await db.BanAns.AnyAsync(x => x.MaBan == busy.MaBan), "Busy table delete blocked");
+            }
+            await using (var db = Db())
+            {
+                db.BanAns.Add(new BanAn { TenBan = "Test 01", MaLoaiBan = type, SoChoNgoi = 4, ViTri = "Test" });
+                try { await db.SaveChangesAsync(); Check(false,"Unique index"); }
+                catch (DbUpdateException) { Check(true,"Unique index rejects competing duplicate"); }
+            }
+            await using (var db = Db())
+            {
+                db.LoaiBans.Remove(await db.LoaiBans.FindAsync(type) ?? throw new Exception());
+                try { await db.SaveChangesAsync(); Check(false,"FK restriction"); }
+                catch (DbUpdateException) { Check(true,"FK prevents deleting referenced table type"); }
+            }
+            Console.WriteLine($"{checks} SQL integration checks passed.");
+            if (Environment.GetEnvironmentVariable("MODULE2_APP_DLL") is string appDll)
+                await CheckHttpAsync(setup, connection, appDll, type, Check);
+        }
+        finally
+        {
+            await setup.Database.EnsureDeletedAsync();
+        }
+    }
+
+    private static async Task CheckHttpAsync(AppDbContext setup, string connection, string appDll,
+        int type, Action<bool,string> check)
+    {
+        // Các tài khoản này chỉ tồn tại trong database test GUID, được xóa sau test.
+        var password = Guid.NewGuid().ToString("N");
+        // Schema test riêng cần đủ chỗ cho PasswordHasher của Module 1.
+        // Model TaiKhoan hiện giới hạn 50 ký tự: cần nhóm sửa trước khi chạy database thật.
+        if (Environment.GetEnvironmentVariable("MODULE2_CURRENT_MODEL_TESTS") == "1")
+            await setup.Database.ExecuteSqlRawAsync("ALTER TABLE [TaiKhoans] ALTER COLUMN [MatKhau] nvarchar(256) NOT NULL");
+        var accounts = new[] {
+            new TaiKhoan { TenDangNhap = "testadmin", HoTen = "Test admin", Email = "test@example.invalid", VaiTro = VaiTro.Admin, TrangThai = true },
+            new TaiKhoan { TenDangNhap = "testuser", HoTen = "Test user", Email = "user@example.invalid", VaiTro = VaiTro.User, TrangThai = true }
+        };
+        foreach (var account in accounts)
+            account.MatKhau = QuanLyNhaHang.Helpers.PasswordHelper.HashPassword(account, password);
+        setup.TaiKhoans.AddRange(accounts);
+        await setup.SaveChangesAsync();
+        var start = new System.Diagnostics.ProcessStartInfo("dotnet")
+        {
+            UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true,
+            RedirectStandardError = true, WorkingDirectory = Directory.GetCurrentDirectory()
+        };
+        start.ArgumentList.Add(appDll);
+        start.Environment["ConnectionStrings__DefaultConnection"] = connection;
+        start.Environment["ASPNETCORE_URLS"] = "http://127.0.0.1:15397";
+        start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+        using var process = System.Diagnostics.Process.Start(start)!;
+        var output = process.StandardOutput.ReadToEndAsync();
+        var error = process.StandardError.ReadToEndAsync();
+        using var handler = new HttpClientHandler { AllowAutoRedirect = false, CookieContainer = new System.Net.CookieContainer() };
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:15397"), Timeout = TimeSpan.FromSeconds(15) };
+        try
+        {
+            var ready = false;
+            for (var attempt = 0; attempt < 40 && !process.HasExited; attempt++)
+            {
+                try { ready = (await client.GetAsync("/Account/Login")).IsSuccessStatusCode; if (ready) break; }
+                catch (HttpRequestException) { }
+                await Task.Delay(250);
+            }
+            check(ready, "HTTP application starts");
+            foreach (var route in new[]{"/BanAn","/BanAn/Details/1","/BanAn/Create","/BanAn/Edit/1","/BanAn/Delete/1"})
+            {
+                var response = await client.GetAsync(route);
+                check((int)response.StatusCode == 302 && response.Headers.Location?.OriginalString == "/Account/Login",
+                    "HTTP anonymous redirected to login " + route);
+            }
+            await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string,string>
+                { ["username"] = "testuser", ["password"] = password }));
+            var query = "/BanAn?keyword=Test&maLoaiBan=" + type + "&soChoNgoi=4&trangThai=" +
+                Uri.EscapeDataString(BanAnTrangThai.SanSang) + "&sortOrder=name_desc&page=2";
+            var html = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync(query));
+            check(html.Contains("Test 07") && html.Contains("Test 03") && !html.Contains("Test 08"), "HTTP rendered second page");
+            var links = System.Text.RegularExpressions.Regex.Matches(html, "href=\"([^\"]+)\"")
+                .Select(x => x.Groups[1].Value).Where(x => x.Contains("page=3")).ToArray();
+            check(links.Any(x => x.Contains("keyword=Test") && x.Contains("maLoaiBan=" + type)
+                && x.Contains("soChoNgoi=4") && x.Contains("trangThai=") && x.Contains("sortOrder=name_desc")),
+                "HTTP pagination preserves all conditions");
+            check(!html.Contains(">+ Thêm bàn<") && !html.Contains("/BanAn/Edit/") && !html.Contains("/BanAn/Delete/"),
+                "HTTP customer admin controls hidden");
+            check(html.Contains("css/client.css") && html.Contains("css/ban-an-client.css") && !html.Contains("css/admin.css"),
+                "HTTP customer uses ClientLayout");
+            var detailId = await setup.BanAns.Select(x => x.MaBan).FirstAsync();
+            var clientDetails = await client.GetStringAsync("/BanAn/Details/" + detailId);
+            check(clientDetails.Contains("css/client.css") && !clientDetails.Contains("/BanAn/Edit/"), "HTTP customer details use ClientLayout without edit");
+            foreach (var route in new[]{"/BanAn/Create","/BanAn/Edit/1","/BanAn/Delete/1"})
+                check((int)(await client.GetAsync(route)).StatusCode == 403, "HTTP customer denied " + route);
+            // Lấy token hợp lệ cho khách: chứng minh POST bị chặn bởi quyền, không chỉ thiếu token.
+            var loginPage = await client.GetStringAsync("/Account/Login");
+            var customerToken = System.Text.RegularExpressions.Regex.Match(loginPage,
+                "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"");
+            check(customerToken.Success, "HTTP customer anti forgery fixture");
+            foreach (var route in new[]{"/BanAn/Create","/BanAn/Edit/" + detailId,"/BanAn/Delete/" + detailId})
+                check((int)(await client.PostAsync(route, new FormUrlEncodedContent(new Dictionary<string,string> {
+                    ["__RequestVerificationToken"] = System.Net.WebUtility.HtmlDecode(customerToken.Groups[1].Value)
+                }))).StatusCode == 403, "HTTP customer POST denied " + route);
+            await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string,string>
+                { ["username"] = "testadmin", ["password"] = password }));
+            var create = await client.GetAsync("/BanAn/Create");
+            check(create.IsSuccessStatusCode, "HTTP admin session grants Create");
+            var formHtml = await create.Content.ReadAsStringAsync();
+            check(formHtml.Contains("css/admin.css") && !formHtml.Contains("css/client.css"), "HTTP admin Create uses AdminLayout");
+            var adminHtml = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync(query));
+            check(adminHtml.Contains("css/admin.css") && adminHtml.Contains(">+ Thêm bàn<") && adminHtml.Contains("Test 07"),
+                "HTTP admin list uses AdminLayout and retains search pagination");
+            var home = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/TrangChu"));
+            check(home.Contains("href=\"/BanAn\""), "HTTP admin navigation links to tables");
+            var tokenMatch = System.Text.RegularExpressions.Regex.Match(formHtml,
+                "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"");
+            check(tokenMatch.Success, "HTTP anti forgery token rendered");
+            var fields = new Dictionary<string,string> {
+                ["TenBan"] = "HTTP table", ["MaLoaiBan"] = type.ToString(), ["SoChoNgoi"] = "4",
+                ["ViTri"] = "Tầng 2", ["TrangThai"] = BanAnTrangThai.SanSang
+            };
+            check((int)(await client.PostAsync("/BanAn/Create", new FormUrlEncodedContent(fields))).StatusCode == 400,
+                "HTTP POST without anti forgery rejected");
+            fields["__RequestVerificationToken"] = System.Net.WebUtility.HtmlDecode(tokenMatch.Groups[1].Value);
+            fields["SoChoNgoi"] = "0";
+            var invalid = await client.PostAsync("/BanAn/Create", new FormUrlEncodedContent(fields));
+            check(invalid.IsSuccessStatusCode && !await setup.BanAns.AnyAsync(x => x.TenBan == "HTTP table"),
+                "HTTP model validation blocks invalid seats");
+            fields["SoChoNgoi"] = "4";
+            check((int)(await client.PostAsync("/BanAn/Create", new FormUrlEncodedContent(fields))).StatusCode == 302
+                && await setup.BanAns.AnyAsync(x => x.TenBan == "HTTP table"), "HTTP valid create saves to SQL Server");
+            var id = await setup.BanAns.Where(x => x.TenBan == "HTTP table").Select(x => x.MaBan).SingleAsync();
+            var editHtml = await client.GetStringAsync("/BanAn/Edit/" + id);
+            check(editHtml.Contains("HTTP table"), "HTTP Edit loads saved values");
+            fields["TenBan"] = "HTTP updated";
+            fields["MaBan"] = "99999";
+            check((int)(await client.PostAsync("/BanAn/Edit/" + id, new FormUrlEncodedContent(fields))).StatusCode == 302
+                && await setup.BanAns.AnyAsync(x => x.MaBan == id && x.TenBan == "HTTP updated"), "HTTP Edit ignores posted primary key");
+            var details = await client.GetAsync("/BanAn/Details/" + id);
+            check(details.IsSuccessStatusCode, "HTTP Details renders");
+            var delete = await client.GetAsync("/BanAn/Delete/" + id);
+            check(delete.IsSuccessStatusCode, "HTTP Delete confirmation renders");
+            check((int)(await client.PostAsync("/BanAn/Delete/" + id, new FormUrlEncodedContent(fields))).StatusCode == 302
+                && !await setup.BanAns.AnyAsync(x => x.MaBan == id), "HTTP Delete saves");
+            await client.GetAsync("/Account/DangXuat");
+            check((int)(await client.GetAsync("/BanAn")).StatusCode == 302, "HTTP logout requires login again");
+        }
+        finally
+        {
+            if (!process.HasExited) { process.Kill(entireProcessTree:true); await process.WaitForExitAsync(); }
+            await output; await error;
+        }
+    }
+
+
+    sealed class TestTempDataProvider : ITempDataProvider
+    {
+        public IDictionary<string,object> LoadTempData(HttpContext context) => new Dictionary<string,object>();
+        public void SaveTempData(HttpContext context, IDictionary<string,object> values) { }
+    }
+}
+

@@ -1,0 +1,43 @@
+@* Họ và tên: Vi Thái Học
+   Mã sinh viên: 23103100054
+   Nội dung thực hiện: Form dùng chung cho thêm, sửa bàn ăn với select, textarea và validation. *@
+@model QuanLyNhaHang.ViewModels.BanAnFormViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+@if (!Model.LoaiBanOptions.Any()) {
+    <p class="alert alert-warning">Chưa có loại bàn. Vui lòng thêm loại bàn trong Module 1 trước.</p>
+}
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="TenBan" class="form-label"></label>
+        <input asp-for="TenBan" class="form-control" />
+        <span asp-validation-for="TenBan" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="MaLoaiBan" class="form-label"></label>
+        <select asp-for="MaLoaiBan" asp-items="Model.LoaiBanOptions" class="form-select">
+            <option value="">-- Chọn loại bàn --</option>
+        </select>
+        <span asp-validation-for="MaLoaiBan" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="SoChoNgoi" class="form-label"></label>
+        <input asp-for="SoChoNgoi" min="1" class="form-control" />
+        <span asp-validation-for="SoChoNgoi" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ViTri" class="form-label"></label>
+        <input asp-for="ViTri" class="form-control" />
+        <span asp-validation-for="ViTri" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="MoTa" class="form-label"></label>
+        <textarea asp-for="MoTa" rows="4" class="form-control"></textarea>
+        <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="TrangThai" class="form-label"></label>
+        <select asp-for="TrangThai" asp-items="Model.TrangThaiOptions" class="form-select"></select>
+        <span asp-validation-for="TrangThai" class="text-danger"></span>
+    </div>
+</div>
+

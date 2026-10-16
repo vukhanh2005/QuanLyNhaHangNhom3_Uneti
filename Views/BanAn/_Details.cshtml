@@ -1,0 +1,14 @@
+@* Họ và tên: Vi Thái Học
+   Mã sinh viên: 23103100054
+   Nội dung thực hiện: Hiển thị thông tin bàn ăn dùng chung cho trang chi tiết và xác nhận xóa. *@
+@model QuanLyNhaHangNhom3_Uneti.Models.BanAn
+<dl class="row">
+    <dt class="col-sm-3">Mã bàn</dt><dd class="col-sm-9">@Model.MaBan</dd>
+    <dt class="col-sm-3">Tên bàn</dt><dd class="col-sm-9">@Model.TenBan</dd>
+    <dt class="col-sm-3">Loại bàn</dt><dd class="col-sm-9">@Model.LoaiBan.TenLoaiBan</dd>
+    <dt class="col-sm-3">Số chỗ ngồi</dt><dd class="col-sm-9">@Model.SoChoNgoi</dd>
+    <dt class="col-sm-3">Vị trí</dt><dd class="col-sm-9">@Model.ViTri</dd>
+    <dt class="col-sm-3">Mô tả</dt><dd class="col-sm-9" style="white-space:pre-wrap">@(Model.MoTa ?? "Chưa có mô tả")</dd>
+    <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9">@Model.TrangThai</dd>
+</dl>
+
