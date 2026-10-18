@@ -2,6 +2,7 @@ using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
+using QuanLyNhaHang.Service.Implement;
 using QuanLyNhaHang.Utils;
 
 namespace QuanLyNhaHang
@@ -18,6 +19,7 @@ namespace QuanLyNhaHang
             builder.Services.AddScoped<AccountRepository>();
             builder.Services.AddScoped<LoaiBanRepository>();
             builder.Services.AddScoped<ILoaiBanService, QuanLyNhaHang.Service.Implement.LoaiBanService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(10);

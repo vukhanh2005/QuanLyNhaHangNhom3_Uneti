@@ -10,11 +10,11 @@ namespace QuanLyNhaHang.Controllers.Module01
 {
     public class AccountController : Controller
     {
-        private readonly LoginService service;
+        private readonly IAuthService service;
 
-        public AccountController(AccountRepository repository)
+        public AccountController(IAuthService service)
         {
-            this.service = new LoginService(repository);
+            this.service =service;
         }
         [HttpGet]
         public IActionResult Login()

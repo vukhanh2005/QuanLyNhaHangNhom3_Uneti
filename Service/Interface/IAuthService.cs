@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.DTO;
 
-public interface ILoginService
+public interface IAuthService
 {
     public Task<TaiKhoanResponse> Login(TaiKhoanRequest request);
     public Task<TaiKhoanResponse> Register(TaiKhoanRequest request);
