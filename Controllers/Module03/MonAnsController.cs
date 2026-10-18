@@ -1,181 +1,117 @@
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Filters;
+using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Models;
 
-public class MonAnController : Controller
+namespace QuanLyNhaHang.Controllers.Module03;
+
+[AutoValidateAntiforgeryToken]
+public class MonAnController(IMonAnService service) : Controller
 {
-    private readonly AppDbContext _context;
-
-    public MonAnController(AppDbContext context)
+    public override void OnActionExecuting(ActionExecutingContext context)
     {
-        _context = context;
-    }
-    
-
-    // GET: MONANS
-    public async Task<IActionResult> Index()    
-    {
-        return View(await _context.MonAn.ToListAsync());
-    }
-
-    // GET: MONANS/Details/5
-    public async Task<IActionResult> Details(int? mamon)
-    {
-        if (mamon == null)
+        if (!string.Equals(context.ActionDescriptor.RouteValues["action"], nameof(ThucDon), StringComparison.OrdinalIgnoreCase))
         {
-            return NotFound();
+            if (HttpContext.Session.GetInt32("MaTaiKhoan") == null)
+                context.Result = RedirectToAction("Login", "Account");
+            else if (HttpContext.Session.GetString("VaiTro") != nameof(VaiTro.Admin))
+                context.Result = StatusCode(StatusCodes.Status403Forbidden);
         }
-
-        var monan = await _context.MonAn
-            .FirstOrDefaultAsync(m => m.MaMon == mamon);
-        if (monan == null)
-        {
-            return NotFound();
-        }
-
-        return View(monan);
+        base.OnActionExecuting(context);
     }
 
-    // GET: MONANS/Create
-    public IActionResult Create()
+    [HttpGet]
+    public async Task<IActionResult> Index() => View(await service.GetAll());
+
+    [HttpGet]
+    public async Task<IActionResult> ThucDon() => View(await service.GetAll(true));
+
+    [HttpGet]
+    public async Task<IActionResult> ChiTiet(int id)
     {
-        return View();
+        var result = await service.GetById(id);
+        return result.IsSuccess ? View(result.Data) : NotFound();
     }
 
+    [HttpGet]
+    public IActionResult Them() => View("Form", new MonAnRequest());
 
-    // POST: MONANS/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(MonAn monan)
-{
-    if (!ModelState.IsValid)
-    {
-        Console.WriteLine("=== DU LIEU KHONG HOP LE ===");
-
-        foreach (var item in ModelState)
-        {
-            foreach (var error in item.Value.Errors)
-            {
-                Console.WriteLine($"{item.Key}: {error.ErrorMessage}");
-            }
-        }
-
-        TempData["Error"] = "Dữ liệu không hợp lệ!";
-        return RedirectToAction("Index", "MonAn");
-    }
-
-    Console.WriteLine("=== DU LIEU HOP LE ===");
-
-    _context.MonAn.Add(monan);
-    await _context.SaveChangesAsync();
-
-    Console.WriteLine("=== THEM MON THANH CONG ===");
-
-    return RedirectToAction("Index", "MonAn");
-}
-
-    // GET: MONANS/Edit/5
-    public async Task<IActionResult> Edit(int? mamon)
-    {
-        if (mamon == null)
-        {
-            return NotFound();
-        }
-
-        var monan = await _context.MonAn.FindAsync(mamon);
-        if (monan == null)
-        {
-            return NotFound();
-        }
-        return View(monan);
-    }
-
-    // POST: MONANS/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? mamon, [Bind("MaMon,TenMon,LoaiMon,DonGia,MoTa,TrangThai")] MonAn monan)
+    public async Task<IActionResult> Them(MonAnRequest request)
     {
-        if (mamon != monan.MaMon)
+        if (!ModelState.IsValid) return View("Form", request);
+        var result = await service.Them(request);
+        if (!result.IsSuccess)
         {
-            TempData["Error"] = "Mã món ăn không hợp lệ!";
-            return RedirectToAction(nameof(Index));
+            ModelState.AddModelError(string.Empty, result.Message ?? "Không thể thêm món ăn.");
+            return View("Form", request);
         }
-
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                _context.Update(monan);
-                await _context.SaveChangesAsync();
-                TempData["Message"] = "Cập nhật món ăn thành công!";
-
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-               TempData["Error"] = "Có lỗi xảy ra khi cập nhật món ăn!";
-            } 
-        }
-        else
-        {
-            TempData["Error"] = "Dữ liệu không hợp lệ!";
-        }
+        TempData["SuccessMessage"] = result.Message;
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: MONANS/Delete/5
-    public async Task<IActionResult> Delete(int? mamon)
+    [HttpGet]
+    public async Task<IActionResult> Sua(int id)
     {
-        if (mamon == null)
+        var result = await service.GetById(id);
+        if (!result.IsSuccess) return NotFound();
+        var item = result.Data!;
+        ViewData["Id"] = id;
+        return View("Form", new MonAnRequest
         {
-            return NotFound();
-        }
-
-        var monan = await _context.MonAn
-            .FirstOrDefaultAsync(m => m.MaMon == mamon);
-        if (monan == null)
-        {
-            return NotFound();
-        }
-
-        return View(monan);
+            TenMon = item.TenMon, LoaiMon = item.LoaiMon, DonGia = item.DonGia,
+            MoTa = item.MoTa, TrangThai = item.TrangThai
+        });
     }
 
-    // POST: MONANS/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? mamon)
+    [HttpPost]
+    public async Task<IActionResult> Sua(int id, MonAnRequest request)
     {
-        var monan = await _context.MonAn.FindAsync(mamon);
-        if (monan != null)
-        {   
-            try{
-            _context.MonAn.Remove(monan);
-            TempData["Message"] = "Xóa món ăn thành công!";
-        }catch(Exception ex){
-            TempData["Error"] = "Có lỗi xảy ra khi xóa món ăn!";
-        }
-        }
-        else
+        if (!(await service.GetById(id)).IsSuccess) return NotFound();
+        ViewData["Id"] = id;
+        if (!ModelState.IsValid) return View("Form", request);
+        var result = await service.Sua(id, request);
+        if (!result.IsSuccess)
         {
-            TempData["Error"] = "Món ăn không tồn tại!";
+            ModelState.AddModelError(string.Empty, result.Message ?? "Không thể sửa món ăn.");
+            return View("Form", request);
         }
-
-        await _context.SaveChangesAsync();
+        TempData["SuccessMessage"] = result.Message;
         return RedirectToAction(nameof(Index));
     }
 
-    private bool MonAnExists(int? mamon)
+    [HttpGet]
+    public async Task<IActionResult> Xoa(int id)
     {
-        return _context.MonAn.Any(e => e.MaMon == mamon);
+        var result = await service.GetById(id);
+        if (!result.IsSuccess) return NotFound();
+        ViewData["ConfirmDelete"] = true;
+        return View("ChiTiet", result.Data);
     }
-    public async Task<IActionResult> ThucDon()
+
+    [HttpPost, ActionName("Xoa")]
+    public async Task<IActionResult> XacNhanXoa(int id)
     {
-        var monAnList = await _context.MonAn.ToListAsync();
-        return View(monAnList);
+        var item = await service.GetById(id);
+        if (!item.IsSuccess) return NotFound();
+        var result = await service.Xoa(id);
+        if (!result.IsSuccess)
+        {
+            ViewData["ConfirmDelete"] = true;
+            ModelState.AddModelError(string.Empty, result.Message ?? "Không thể xóa món ăn.");
+            return View("ChiTiet", item.Data);
+        }
+        TempData["SuccessMessage"] = result.Message;
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CapNhatTrangThai(int id, TrangThaiMonAn? trangThai)
+    {
+        if (!ModelState.IsValid || trangThai == null || !Enum.IsDefined(trangThai.Value)) return BadRequest();
+        if (!(await service.GetById(id)).IsSuccess) return NotFound();
+        var result = await service.CapNhatTrangThai(id, trangThai.Value);
+        TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction(nameof(Index));
     }
 }

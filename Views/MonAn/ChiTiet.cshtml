@@ -1,0 +1,29 @@
+@model QuanLyNhaHang.Models.MonAn
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    var deleting = ViewData["ConfirmDelete"] is true;
+    ViewData["Title"] = deleting ? "Xóa món ăn" : "Chi tiết món ăn";
+}
+<section class="admin-panel p-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <dl>
+        <dt>Tên món</dt><dd>@Model.TenMon</dd>
+        <dt>Loại món</dt><dd>@Model.LoaiMon</dd>
+        <dt>Đơn giá</dt><dd>@Model.DonGia.ToString("N2") đ</dd>
+        <dt>Mô tả</dt><dd class="text-break">@(string.IsNullOrWhiteSpace(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)</dd>
+        <dt>Trạng thái</dt><dd>@(Model.TrangThai == QuanLyNhaHang.Models.TrangThaiMonAn.DangPhucVu ? "Đang phục vụ" : "Ngừng phục vụ")</dd>
+    </dl>
+    @if (deleting)
+    {
+        <p class="text-danger">Bạn có chắc muốn xóa món này? Thao tác không thể hoàn tác.</p>
+        <form asp-action="Xoa" asp-route-id="@Model.MaMon" method="post">
+            <button class="btn btn-danger" type="submit">Xác nhận xóa</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+        </form>
+    }
+    else
+    {
+        <a class="btn btn-success" asp-action="Sua" asp-route-id="@Model.MaMon">Sửa</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+    }
+</section>

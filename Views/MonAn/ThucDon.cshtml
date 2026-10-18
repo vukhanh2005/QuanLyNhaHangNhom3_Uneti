@@ -1,11 +1,12 @@
 @model IEnumerable<QuanLyNhaHang.Models.MonAn>
 
 @{
-    ViewData["Title"] = "ThucDon";
+    Layout =  "/Views/Shared/ClientLayout.cshtml"; 
+    ViewData["Title"] = "Thực đơn";
     var stt = 0;
 }
 
-
+<body>
 <div class="container mt-4 mb-5">
 
     <h2 class="text-center mb-2">THỰC ĐƠN NHÀ HÀNG</h2>
@@ -15,23 +16,21 @@
     </p>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover align-middle text-center">
+        <table style="width: 100%;" class="table table-bordered table-striped table-hover align-middle text-center">
 
             <thead class="text-center">
                 <tr>
-                    <th style="width: 5%;">STT</th>
-                    <th style="width: 15%;">Tên món ăn</th>
-                    <th style="width: 15%;">Loại món</th>
-                    <th style="width: 15%;">Đơn giá</th>
-                    <th style="width: 40%;">Mô tả</th>
+                    <th style = "width: 5%;" >STT</th>
+                    <th style = "width: 20%;" >Tên món ăn</th>
+                    <th style = "width: 15%;" >Loại món</th>
+                    <th style = "width: 20%;" >Đơn giá</th>
+                    <th style = "width: 40%;" >Mô tả</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody style="text-align: center;">
                 @foreach (var item in Model)
                 {
-                    if ((int)item.TrangThai == 1)
-                    {
                         stt++;
 
                         <tr>
@@ -44,12 +43,15 @@
                             <td>@item.LoaiMon</td>
 
                             <td class="text-danger fw-bold">
-                                @item.DonGia.ToString("N0") đ
+                                @item.DonGia.ToString("N2") đ
                             </td>
 
                             <td>@item.MoTa</td>
                         </tr>
-                    }
+                }
+                @if (stt == 0)
+                {
+                    <tr><td colspan="5">Hiện chưa có món ăn đang phục vụ.</td></tr>
                 }
             </tbody>
 
@@ -57,3 +59,5 @@
     </div>
 
 </div>
+
+ </body>

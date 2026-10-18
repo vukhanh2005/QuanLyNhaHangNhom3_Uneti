@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace QuanLyNhaHang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261014173522_ThemKhachHang")]
-    partial class ThemKhachHang
+    [Migration("20261015011954_Migra11")]
+    partial class Migra11
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -150,8 +150,8 @@ namespace QuanLyNhaHang.Migrations
 
                     b.Property<string>("MatKhau")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("TenDangNhap")
                         .IsRequired()
