@@ -5,10 +5,10 @@ using QuanLyNhaHang.Repository;
 
 namespace QuanLyNhaHang.Service.Implement
 {
-    public class LoginService : ILoginService
+    public class AuthService : IAuthService
     {
         AccountRepository repository;
-        public LoginService(AccountRepository repository)
+        public AuthService(AccountRepository repository)
         {
             this.repository = repository;
         }

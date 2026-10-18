@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using QuanLyNhaHang.DTO;
+using QuanLyNhaHang.Filters;
 using QuanLyNhaHang.Models;
 
 namespace QuanLyNhaHang.Controllers.Module01;
-
+[Module2Admin]
 [AutoValidateAntiforgeryToken]
 public class LoaiBanController : Controller
 {
