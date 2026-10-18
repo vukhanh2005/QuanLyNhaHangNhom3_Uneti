@@ -68,12 +68,9 @@ namespace QuanLyNhaHang.Service.Implement
 
             // Kiểm tra username, password rỗng
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
                 return new TaiKhoanResponse("Tài khoản hoặc mật khẩu không chính xác");
-            }
 
             TaiKhoan account = await repository.getAccountByUsername(username);
-
             // Tìm thấy tài khoản trong CSDL
             if (account != null)
             {
@@ -82,10 +79,8 @@ namespace QuanLyNhaHang.Service.Implement
                 {
                     return new TaiKhoanResponse("Tài khoản của bạn đã bị khóa");
                 }
-
                 // --- KIỂM TRA MẬT KHẨU BẰNG HÀM VERIFY CỦA PASSWORDHELPER ---
                 bool isPasswordValid = PasswordHelper.VerifyPassword(account, account.MatKhau, password);
-
                 if (isPasswordValid)
                 {
                     string message = "[SUCCESS] Đăng nhập thành công";
