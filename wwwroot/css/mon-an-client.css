@@ -1,0 +1,7 @@
+.mon-an-client { padding-block: 36px; }
+.mon-an-client h2 { margin-bottom: 12px; }
+.mon-an-client .table-responsive { overflow-x: auto; margin-top: 24px; }
+.mon-an-client table { border-collapse: collapse; min-width: 600px; }
+.mon-an-client th, .mon-an-client td { padding: 14px 12px; border-bottom: 1px solid var(--line); }
+.mon-an-client th { background: var(--paper); }
+.mon-an-client td { overflow-wrap: anywhere; }

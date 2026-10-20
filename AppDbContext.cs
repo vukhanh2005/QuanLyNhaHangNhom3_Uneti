@@ -14,6 +14,8 @@ public class AppDbContext : DbContext{
     }
     public DbSet<MonAn> MonAn { get; set; }
 
+    public DbSet<KhachHang> KhachHangs { get; set; }
+
     public DbSet<BanAn> BanAns { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

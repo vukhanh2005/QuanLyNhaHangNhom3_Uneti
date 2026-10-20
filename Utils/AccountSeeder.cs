@@ -8,7 +8,7 @@ namespace QuanLyNhaHang.Utils;
 public static class AccountSeeder
 {
     public static async Task<bool> CreateAsync(AppDbContext context, string username,
-        string password, string hoTen, string email, VaiTro vaiTro)
+        string password, string hoTen, string email, VaiTro vaiTro, KhachHang? khachHang = null)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
@@ -25,7 +25,8 @@ public static class AccountSeeder
             HoTen = hoTen.Trim(),
             Email = email.Trim(),
             VaiTro = vaiTro,
-            TrangThai = true
+            TrangThai = true,
+            KhachHang = khachHang
         };
 
         account.MatKhau = PasswordHelper.HashPassword(account, password);

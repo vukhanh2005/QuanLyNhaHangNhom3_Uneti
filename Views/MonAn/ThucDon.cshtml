@@ -1,0 +1,66 @@
+@model IEnumerable<QuanLyNhaHang.Models.MonAn>
+
+@{
+    Layout =  "/Views/Shared/ClientLayout.cshtml"; 
+    ViewData["Title"] = "Thực đơn";
+    var stt = 0;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/mon-an-client.css" asp-append-version="true" />
+}
+<section class="mon-an-client">
+<div class="container mt-4 mb-5">
+
+    <h2 class="text-center mb-2">THỰC ĐƠN NHÀ HÀNG</h2>
+
+    <p class="text-center text-muted mb-4">
+        Danh sách các món ăn đang phục vụ
+    </p>
+
+    <div class="table-responsive">
+        <table style="width: 100%;" class="table table-bordered table-striped table-hover align-middle text-center">
+
+            <thead class="text-center">
+                <tr>
+                    <th style = "width: 5%;" >STT</th>
+                    <th style = "width: 20%;" >Tên món ăn</th>
+                    <th style = "width: 15%;" >Loại món</th>
+                    <th style = "width: 20%;" >Đơn giá</th>
+                    <th style = "width: 40%;" >Mô tả</th>
+                </tr>
+            </thead>
+
+            <tbody style="text-align: center;">
+                @foreach (var item in Model)
+                {
+                        stt++;
+
+                        <tr>
+                            <td class="text-center">@stt</td>
+
+                            <td class="fw-semibold">
+                                @item.TenMon
+                            </td>
+
+                            <td>@item.LoaiMon</td>
+
+                            <td class="text-danger fw-bold">
+                                @item.DonGia.ToString("N2") đ
+                            </td>
+
+                            <td>@item.MoTa</td>
+                        </tr>
+                }
+                @if (stt == 0)
+                {
+                    <tr><td colspan="5">Hiện chưa có món ăn đang phục vụ.</td></tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+ </section>

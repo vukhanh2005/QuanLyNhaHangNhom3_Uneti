@@ -55,7 +55,13 @@ static class Module2SqlChecks
                 Console.WriteLine("TEST FIXTURE: current model, migrations not exercised.");
             }
             else
+            {
+                var migrator = Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>(setup.Database);
+                await migrator.MigrateAsync("20261016024734_InitialIntegrated");
+                await setup.Database.ExecuteSqlRawAsync("INSERT INTO MonAn (TenMon, LoaiMon, DonGia, HinhAnh, TrangThai) VALUES (N'Upgrade fixture', N'Test', 10000, N'/images/keep.png', 1)");
                 await setup.Database.MigrateAsync();
+                Check(await setup.MonAn.AnyAsync(x => x.HinhAnh == "/images/keep.png"), "Migration preserves existing dishes and images");
+            }
             setup.LoaiBans.AddRange(Enumerable.Range(1,4).Select(i => new LoaiBan { TenLoaiBan = $"Loại kiểm thử {i}" }));
             await setup.SaveChangesAsync();
             var type = await setup.LoaiBans.Select(x => x.MaLoaiBan).FirstAsync();
@@ -215,6 +221,25 @@ static class Module2SqlChecks
                 check((int)response.StatusCode == 302 && response.Headers.Location?.OriginalString == "/Account/Login",
                     "HTTP anonymous redirected to login " + route);
             }
+            var registerFields = new Dictionary<string,string> {
+                ["username"] = "registeredcustomer", ["password"] = password, ["confirmPassword"] = password,
+                ["hoTen"] = "Registered Customer", ["email"] = "registered@example.invalid",
+                ["ngaySinh"] = "2000-01-01", ["gioiTinh"] = "false",
+                ["soDienThoai"] = "0901234567", ["diaChi"] = "Ha Noi"
+            };
+            registerFields["ngaySinh"] = "invalid-date";
+            await client.PostAsync("/Account/Register", new FormUrlEncodedContent(registerFields));
+            check(!await setup.TaiKhoans.AnyAsync(x => x.TenDangNhap == "registeredcustomer"), "Invalid registration saves neither account nor customer");
+            registerFields["ngaySinh"] = "2000-01-01";
+            check((await client.PostAsync("/Account/Register", new FormUrlEncodedContent(registerFields))).IsSuccessStatusCode, "Registration HTTP succeeds");
+            var registered = await setup.TaiKhoans.AsNoTracking().Include(x => x.KhachHang).SingleAsync(x => x.TenDangNhap == "registeredcustomer");
+            check(registered.VaiTro == VaiTro.User && registered.KhachHang?.SoDienThoai == "0901234567"
+                && registered.KhachHang.GioiTinh == false && QuanLyNhaHang.Helpers.PasswordHelper.VerifyPassword(registered, registered.MatKhau!, password),
+                "Registration stores linked customer, User role and password hash");
+            await client.PostAsync("/Account/Register", new FormUrlEncodedContent(registerFields));
+            check(await setup.TaiKhoans.CountAsync(x => x.TenDangNhap == "registeredcustomer") == 1
+                && await setup.KhachHangs.CountAsync(x => x.MaTaiKhoan == registered.MaTaiKhoan) == 1, "Duplicate registration adds no orphan customer");
+            check((await client.GetAsync("/MonAn/ThucDon")).IsSuccessStatusCode, "Public menu accessible");
             await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string,string>
                 { ["username"] = "testuser", ["password"] = password }));
             var query = "/BanAn?keyword=Test&maLoaiBan=" + type + "&soChoNgoi=4&trangThai=" +
@@ -235,6 +260,8 @@ static class Module2SqlChecks
             check(clientDetails.Contains("css/client.css") && !clientDetails.Contains("/BanAn/Edit/"), "HTTP customer details use ClientLayout without edit");
             foreach (var route in new[]{"/BanAn/Create","/BanAn/Edit/1","/BanAn/Delete/1"})
                 check((int)(await client.GetAsync(route)).StatusCode == 403, "HTTP customer denied " + route);
+            foreach (var route in new[]{"/MonAn", "/MonAn/Them", "/MonAn/Sua/1", "/MonAn/Xoa/1"})
+                check((int)(await client.GetAsync(route)).StatusCode == 403, "Customer denied dish admin " + route);
             // Lấy token hợp lệ cho khách: chứng minh POST bị chặn bởi quyền, không chỉ thiếu token.
             var loginPage = await client.GetStringAsync("/Account/Login");
             var customerToken = System.Text.RegularExpressions.Regex.Match(loginPage,
@@ -244,6 +271,10 @@ static class Module2SqlChecks
                 check((int)(await client.PostAsync(route, new FormUrlEncodedContent(new Dictionary<string,string> {
                     ["__RequestVerificationToken"] = System.Net.WebUtility.HtmlDecode(customerToken.Groups[1].Value)
                 }))).StatusCode == 403, "HTTP customer POST denied " + route);
+            foreach (var route in new[]{"/MonAn/Them", "/MonAn/Sua/1", "/MonAn/Xoa/1", "/MonAn/CapNhatTrangThai/1"})
+                check((int)(await client.PostAsync(route, new FormUrlEncodedContent(new Dictionary<string,string> {
+                    ["__RequestVerificationToken"] = System.Net.WebUtility.HtmlDecode(customerToken.Groups[1].Value)
+                }))).StatusCode == 403, "Customer POST denied dish admin " + route);
             await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string,string>
                 { ["username"] = "testadmin", ["password"] = password }));
             var create = await client.GetAsync("/BanAn/Create");
@@ -285,6 +316,31 @@ static class Module2SqlChecks
             check(delete.IsSuccessStatusCode, "HTTP Delete confirmation renders");
             check((int)(await client.PostAsync("/BanAn/Delete/" + id, new FormUrlEncodedContent(fields))).StatusCode == 302
                 && !await setup.BanAns.AnyAsync(x => x.MaBan == id), "HTTP Delete saves");
+            var dishPage = await client.GetStringAsync("/MonAn/Them");
+            check(dishPage.Contains("css/admin.css"), "Dish form uses AdminLayout");
+            var dishFields = new Dictionary<string,string> {
+                ["TenMon"] = "HTTP dish", ["LoaiMon"] = "Test", ["DonGia"] = "25000", ["TrangThai"] = "1"
+            };
+            check((int)(await client.PostAsync("/MonAn/Them", new FormUrlEncodedContent(dishFields))).StatusCode == 400, "Dish POST requires antiforgery");
+            dishFields["__RequestVerificationToken"] = System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Match(dishPage, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value);
+            dishFields["DonGia"] = "-1";
+            await client.PostAsync("/MonAn/Them", new FormUrlEncodedContent(dishFields));
+            check(!await setup.MonAn.AnyAsync(x => x.TenMon == "HTTP dish"), "Negative dish price blocked");
+            dishFields["DonGia"] = "25000";
+            check((int)(await client.PostAsync("/MonAn/Them", new FormUrlEncodedContent(dishFields))).StatusCode == 302, "Admin creates dish");
+            var dishId = await setup.MonAn.Where(x => x.TenMon == "HTTP dish").Select(x => x.MaMon).SingleAsync();
+            var menu = await client.GetStringAsync("/MonAn/ThucDon");
+            check(menu.Contains("HTTP dish") && menu.Contains("css/client.css"), "Client menu shows serving dish");
+            dishFields["TenMon"] = "HTTP updated dish";
+            check((int)(await client.PostAsync("/MonAn/Sua/" + dishId, new FormUrlEncodedContent(dishFields))).StatusCode == 302
+                && await setup.MonAn.AnyAsync(x => x.MaMon == dishId && x.TenMon == "HTTP updated dish"), "Admin edits dish");
+            dishFields["TrangThai"] = "0";
+            await client.PostAsync("/MonAn/CapNhatTrangThai/" + dishId, new FormUrlEncodedContent(dishFields));
+            check(!(await client.GetStringAsync("/MonAn/ThucDon")).Contains("HTTP updated dish"), "Stopped dish hidden from menu");
+            check((await client.GetAsync("/MonAn/Xoa/" + dishId)).IsSuccessStatusCode
+                && await setup.MonAn.AnyAsync(x => x.MaMon == dishId), "Dish delete GET only confirms");
+            check((int)(await client.PostAsync("/MonAn/Xoa/" + dishId, new FormUrlEncodedContent(dishFields))).StatusCode == 302
+                && !await setup.MonAn.AnyAsync(x => x.MaMon == dishId), "Admin deletes dish");
             await client.GetAsync("/Account/DangXuat");
             check((int)(await client.GetAsync("/BanAn")).StatusCode == 302, "HTTP logout requires login again");
         }
@@ -302,4 +358,5 @@ static class Module2SqlChecks
         public void SaveTempData(HttpContext context, IDictionary<string,object> values) { }
     }
 }
+
 

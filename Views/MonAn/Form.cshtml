@@ -1,0 +1,39 @@
+@model QuanLyNhaHang.DTO.MonAnRequest
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    var editing = ViewData["Id"] is int;
+    ViewData["Title"] = editing ? "Sửa món ăn" : "Thêm món ăn";
+}
+<form asp-action="@(editing ? "Sua" : "Them")" asp-route-id="@ViewData["Id"]" method="post" class="admin-panel p-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <div class="mb-3">
+        <label asp-for="TenMon" class="form-label"></label>
+        <input asp-for="TenMon" class="form-control" maxlength="50" />
+        <span asp-validation-for="TenMon" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="LoaiMon" class="form-label"></label>
+        <input asp-for="LoaiMon" class="form-control" maxlength="50" />
+        <span asp-validation-for="LoaiMon" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DonGia" class="form-label"></label>
+        <input asp-for="DonGia" type="number" step="0.01" min="0.01" class="form-control" />
+        <span asp-validation-for="DonGia" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="MoTa" class="form-label"></label>
+        <textarea asp-for="MoTa" rows="4" class="form-control"></textarea>
+        <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="TrangThai" class="form-label"></label>
+        <select asp-for="TrangThai" class="form-select"><option value="1">Đang phục vụ</option><option value="0">Ngừng phục vụ</option></select>
+        <span asp-validation-for="TrangThai" class="text-danger"></span>
+    </div>
+    <button class="btn btn-success" type="submit">Lưu món ăn</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

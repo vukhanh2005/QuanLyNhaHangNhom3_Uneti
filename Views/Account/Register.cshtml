@@ -2,19 +2,21 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Đăng ký tài khoản</title>
     <style>
         label{
             display: inline-block;
             min-width: 120px;
         }
         body{
-            width: 100%;
-            height: 100vh;
+            margin: 0;
+            padding: 24px 12px;
+            box-sizing: border-box;
+            min-height: 100vh;
             display: flex;
 
             justify-content: center;
@@ -25,7 +27,9 @@
             border: 2px black solid;
             border-radius: 50px;
             padding: 20px;
-            width: fit-content;
+            width: 100%;
+            max-width: 480px;
+            box-sizing: border-box;
             height: fit-content;
         }
         .input-register-box{
@@ -46,10 +50,13 @@
             width: 100px;
             height: 50px;
         }
-        input{
+        input, select{
             border-radius: 10px;
             padding-left: 10px;
-            height: 100%;
+            min-height: 32px;
+            flex: 1;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .register-form{
             display: flex;
@@ -70,6 +77,7 @@
 </head>
 <body>
     <div class="wrapper">
+        <h1>Đăng ký tài khoản</h1>
         @{
             if(ViewBag.SuccessMessage != null)
             {
@@ -96,28 +104,49 @@
         }
         <form class="register-form" method="post" asp-controller="Account" asp-action="Register">
             <div class="input-register-box">
-                <label>Ho Va Ten</label>
-                <input required name="hoTen"/>
+                <label for="hoTen">Họ và tên</label>
+                <input id="hoTen" required name="hoTen" maxlength="250" autocomplete="name"/>
             </div>
             <div class="input-register-box">
-                <label>Email</label>
-                <input type="email" required name="email"/>
+                <label for="email">Email</label>
+                <input id="email" type="email" required name="email" maxlength="50" autocomplete="email"/>
             </div>
             <div class="input-register-box">
-                <label>Ten dang nhap</label>
-                <input required name="username"/>
+                <label for="ngaySinh">Ngày sinh</label>
+                <input id="ngaySinh" type="date" required name="ngaySinh" max="@DateTime.Today.ToString("yyyy-MM-dd")" autocomplete="bday"/>
             </div>
             <div class="input-register-box">
-                <label>Mat khau</label>
-                <input required name="password" type="password"/>
+                <label for="gioiTinh">Giới tính</label>
+                <select id="gioiTinh" required name="gioiTinh">
+                    <option value="">Chọn giới tính</option>
+                    <option value="true">Nam</option>
+                    <option value="false">Nữ</option>
+                </select>
             </div>
             <div class="input-register-box">
-                <label>Nhap lai mat khau</label>
-                <input type="password" required name="confirmPassword"/>
+                <label for="soDienThoai">Số điện thoại</label>
+                <input id="soDienThoai" type="tel" required name="soDienThoai" autocomplete="tel"/>
+            </div>
+            <div class="input-register-box">
+                <label for="diaChi">Địa chỉ</label>
+                <input id="diaChi" required name="diaChi" autocomplete="street-address"/>
+            </div>
+            <div class="input-register-box">
+                <label for="username">Tên đăng nhập</label>
+                <input id="username" required name="username" maxlength="50" autocomplete="username"/>
+            </div>
+            <div class="input-register-box">
+                <label for="password">Mật khẩu</label>
+                <input id="password" required name="password" type="password" autocomplete="new-password"/>
+            </div>
+            <div class="input-register-box">
+                <label for="confirmPassword">Nhập lại mật khẩu</label>
+                <input id="confirmPassword" type="password" required name="confirmPassword" autocomplete="new-password"/>
             </div>
             <div class="button-box">
-                <button>Dang ki</button>
+                <button type="submit">Đăng ký</button>
             </div>
+            <p>Đã có tài khoản? <a asp-controller="Account" asp-action="Login">Đăng nhập</a></p>
         </form>
     </div>
 </body>

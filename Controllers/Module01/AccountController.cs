@@ -54,6 +54,12 @@ namespace QuanLyNhaHang.Controllers.Module01
         [HttpPost]
         public async Task<IActionResult> Register(TaiKhoanRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.FailMessage = "Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.";
+                return View("Register");
+            }
+
             TaiKhoanResponse response = await service.Register(request);
 
             if (response.message != null && response.message.StartsWith("[SUCCESS]"))

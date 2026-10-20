@@ -21,6 +21,7 @@ $projectText = @'
     <Compile Include="../../Models/TaiKhoan.cs" />
     <Compile Include="../../Models/LoaiBan.cs" />
     <Compile Include="../../Models/MonAn.cs" />
+    <Compile Include="../../Models/KhachHang.cs" />
     <Compile Include="../../Queries/BanAnFormLogic.cs" />
     <Compile Include="../../Queries/BanAnPagination.cs" />
     <Compile Include="../../Controllers/BanAnController.cs" />
