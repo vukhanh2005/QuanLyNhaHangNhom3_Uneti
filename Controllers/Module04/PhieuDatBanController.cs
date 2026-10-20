@@ -1,91 +1,39 @@
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyNhaHang.ViewModels.Module04;
+using QuanLyNhaHang.Service.Interface;
 
 namespace QuanLyNhaHang.Controllers.Module04
 {
     public class PhieuDatBanController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IPhieuDatBanService _phieuDatBanService;
 
-        public PhieuDatBanController(AppDbContext context)
+        public PhieuDatBanController(
+            IPhieuDatBanService phieuDatBanService)
         {
-            _context = context;
+            _phieuDatBanService = phieuDatBanService;
         }
 
-        
         public async Task<IActionResult> Index(
             string? tenKhachHang,
             string? tenBan,
             string? trangThai,
             DateTime? ngaySuDung)
         {
-            var query = _context.PhieuDatBans
-                .Include(p => p.KhachHang)
-                .Include(p => p.BanAn)
-                .AsQueryable();
-
-            
-            if (!string.IsNullOrWhiteSpace(tenKhachHang))
-            {
-                query = query.Where(p =>
-                    p.KhachHang != null &&
-                    p.KhachHang.HoTen.Contains(tenKhachHang));
-            }
-
-            
-            if (!string.IsNullOrWhiteSpace(tenBan))
-            {
-                query = query.Where(p =>
-                    p.BanAn != null &&
-                    p.BanAn.TenBan.Contains(tenBan));
-            }
-
-          
-            if (!string.IsNullOrWhiteSpace(trangThai))
-            {
-                query = query.Where(p =>
-                    p.TrangThai == trangThai);
-            }
-
-            
-            if (ngaySuDung.HasValue)
-            {
-                var ngay = ngaySuDung.Value.Date;
-                var ngayTiepTheo = ngay.AddDays(1);
-
-                query = query.Where(p =>
-                    p.NgayGioDat >= ngay &&
-                    p.NgayGioDat < ngayTiepTheo);
-            }
-
-            var model = new PhieuDatBanViewModel
-            {
-                DanhSachPhieuDatBan = await query
-                    .OrderByDescending(p => p.NgayGioDat)
-                    .ToListAsync(),
-
-                TenKhachHang = tenKhachHang,
-                TenBan = tenBan,
-                TrangThai = trangThai,
-                NgaySuDung = ngaySuDung
-            };
+            var model = await _phieuDatBanService.GetDanhSachAsync(
+                tenKhachHang,
+                tenBan,
+                trangThai,
+                ngaySuDung);
 
             return View(
                 "~/Views/Module04/PhieuDatBan/Index.cshtml",
                 model);
         }
 
-        
         public async Task<IActionResult> Details(int id)
         {
-            var phieu = await _context.PhieuDatBans
-                .Include(p => p.KhachHang)
-                .Include(p => p.BanAn)
-                .ThenInclude(b => b!.LoaiBan)
-                .FirstOrDefaultAsync(
-                    p => p.MaPhieuDatBan == id);
+            var phieu = await _phieuDatBanService.GetChiTietAsync(id);
 
             if (phieu == null)
             {
@@ -96,6 +44,28 @@ namespace QuanLyNhaHang.Controllers.Module04
                 "~/Views/Module04/PhieuDatBan/Details.cshtml",
                 phieu);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapNhatTrangThai(
+            int id,
+            string trangThaiMoi)
+        {
+            var ketQua =
+                await _phieuDatBanService.CapNhatTrangThaiAsync(
+                    id,
+                    trangThaiMoi);
+
+            if (ketQua.ThanhCong)
+            {
+                TempData["SuccessMessage"] = ketQua.ThongBao;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = ketQua.ThongBao;
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
 }
-

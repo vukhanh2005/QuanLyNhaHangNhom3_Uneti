@@ -29,6 +29,79 @@
         </div>
 
         <div class="card-body">
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mx-3 mt-3">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mx-3 mt-3">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="px-3 pt-3">
+    @if (Model.TrangThai == "Chờ xác nhận" ||
+         Model.TrangThai == "Đã xác nhận")
+    {
+        <div class="border rounded p-3 mb-4">
+            <h5 class="mb-3">Cập nhật trạng thái phiếu</h5>
+
+            <form asp-controller="PhieuDatBan"
+                  asp-action="CapNhatTrangThai"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.MaPhieuDatBan" />
+
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            Trạng thái mới
+                        </label>
+
+                        <select name="trangThaiMoi"
+                                class="form-select"
+                                required>
+                            @if (Model.TrangThai == "Chờ xác nhận")
+                            {
+                                <option value="Đã xác nhận">
+                                    Đã xác nhận
+                                </option>
+                            }
+
+                            <option value="Đã hủy">
+                                Đã hủy
+                            </option>
+
+                            @if (Model.TrangThai == "Đã xác nhận")
+                            {
+                                <option value="Đã sử dụng">
+                                    Đã sử dụng
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Lưu trạng thái
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
             <div class="row g-4">
                 <div class="col-md-6">
                     <label class="text-muted mb-1">Mã phiếu</label>

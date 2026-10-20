@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
-
+using QuanLyNhaHang.Service.Interface;
+using QuanLyNhaHang.Service.Implement;
 namespace QuanLyNhaHang
 {
     public class Program
@@ -10,7 +11,7 @@ namespace QuanLyNhaHang
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddScoped<IPhieuDatBanService, PhieuDatBanService>();
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<AccountRepository>();
@@ -28,7 +29,6 @@ namespace QuanLyNhaHang
             });
             var app = builder.Build();
             app.UseSession();
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
