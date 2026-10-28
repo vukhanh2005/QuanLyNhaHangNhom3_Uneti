@@ -12,6 +12,7 @@ namespace QuanLyNhaHang
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddScoped<IPhieuDatBanService, PhieuDatBanService>();
+            builder.Services.AddScoped<IClientDatBanService, ClientDatBanService>();
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<AccountRepository>();

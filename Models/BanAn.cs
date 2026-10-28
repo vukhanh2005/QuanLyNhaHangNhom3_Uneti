@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyNhaHang.Models
 {
@@ -27,11 +28,11 @@ namespace QuanLyNhaHang.Models
 
         [Required]
         public string TrangThai { get; set; } = "Sẵn sàng";
-        
+
+        [ForeignKey(nameof(MaLoaiBan))]
         public LoaiBan? LoaiBan { get; set; }
 
-
         public ICollection<PhieuDatBan> PhieuDatBans { get; set; }
-        = new List<PhieuDatBan>();
+            = new List<PhieuDatBan>();
     }
 }
