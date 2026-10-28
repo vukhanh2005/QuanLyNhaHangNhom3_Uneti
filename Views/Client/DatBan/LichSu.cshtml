@@ -1,0 +1,102 @@
+@model List<QuanLyNhaHang.Models.PhieuDatBan>
+
+@{
+    ViewData["Title"] = "Lịch sử đặt bàn";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-3">Tra cứu lịch sử đặt bàn</h2>
+
+    <form asp-controller="DatBan"
+          asp-action="LichSu"
+          method="get"
+          class="row g-2 mb-4">
+        <div class="col-md-8">
+            <label for="email" class="form-label">Email đã dùng khi đặt bàn</label>
+            <input id="email"
+                   name="email"
+                   type="email"
+                   value="@ViewBag.Email"
+                   class="form-control"
+                   required />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                Tra cứu
+            </button>
+        </div>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-info">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Bàn</th>
+                        <th>Ngày giờ đặt</th>
+                        <th>Số người</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var phieu in Model)
+                    {
+                        <tr>
+                            <td>@phieu.MaPhieuDatBan</td>
+                            <td>@(phieu.BanAn?.TenBan ?? "Không có dữ liệu")</td>
+                            <td>@phieu.NgayGioDat.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@phieu.SoNguoi</td>
+                            <td>
+                                @if (phieu.TrangThai == "Chờ xác nhận")
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        @phieu.TrangThai
+                                    </span>
+                                }
+                                else if (phieu.TrangThai == "Đã xác nhận")
+                                {
+                                    <span class="badge bg-success">
+                                        @phieu.TrangThai
+                                    </span>
+                                }
+                                else if (phieu.TrangThai == "Đã hủy")
+                                {
+                                    <span class="badge bg-danger">
+                                        @phieu.TrangThai
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        @phieu.TrangThai
+                                    </span>
+                                }
+                            </td>
+                            <td>@phieu.GhiChu</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (ViewBag.ErrorMessage == null)
+    {
+        <div class="alert alert-secondary">
+            Chưa tìm thấy phiếu đặt bàn nào với email này.
+        </div>
+    }
+
+    <a asp-controller="DatBan"
+       asp-action="Index"
+       class="btn btn-outline-primary mt-3">
+        Quay lại trang đặt bàn
+    </a>
+</div>

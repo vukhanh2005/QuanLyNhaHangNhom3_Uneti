@@ -1,0 +1,196 @@
+@model QuanLyNhaHang.ViewModels.Client.TaoPhieuDatBanViewModel
+
+@{
+    ViewData["Title"] = "Đặt bàn";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold">Đặt bàn nhà hàng</h2>
+        <p class="text-muted">
+            Chọn bàn phù hợp, thời gian và số người trước khi gửi yêu cầu.
+        </p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <h4 class="mb-3">Danh sách bàn</h4>
+
+            @if (!Model.DanhSachBan.Any())
+            {
+                <div class="alert alert-warning">
+                    Hiện chưa có bàn sẵn sàng. Vui lòng quay lại sau.
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var ban in Model.DanhSachBan)
+                    {
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@ban.TenBan</h5>
+                                    <p class="mb-1">
+                                        <strong>Loại bàn:</strong>
+                                        @(ban.LoaiBan?.TenLoaiBan ?? "Chưa phân loại")
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Sức chứa:</strong>
+                                        @ban.SoChoNgoi người
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Vị trí:</strong> @ban.ViTri
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(ban.MoTa))
+                                    {
+                                        <p class="text-muted small mb-0">@ban.MoTa</p>
+                                    }
+                                    <button type="button"
+                                            class="btn btn-outline-primary btn-sm mt-3"
+                                            onclick="chonBan(@ban.MaBan)">
+                                        Chọn bàn này
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Thông tin đặt bàn</h4>
+
+                    <form asp-controller="DatBan"
+                          asp-action="Create"
+                          method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="MaBan" class="form-label">Bàn</label>
+                            <select asp-for="MaBan" class="form-select">
+                                <option value="">-- Chọn bàn --</option>
+                                @foreach (var ban in Model.DanhSachBan)
+                                {
+                                    <option value="@ban.MaBan">
+                                        @ban.TenBan - @ban.SoChoNgoi chỗ
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="MaBan"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NgayGioDat" class="form-label">
+                                Ngày và giờ
+                            </label>
+                            <input asp-for="NgayGioDat"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   asp-format="{0:yyyy-MM-ddTHH:mm}" />
+                            <span asp-validation-for="NgayGioDat"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SoNguoi" class="form-label">
+                                Số người
+                            </label>
+                            <input asp-for="SoNguoi"
+                                   type="number"
+                                   min="1"
+                                   class="form-control" />
+                            <span asp-validation-for="SoNguoi"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <hr />
+                        <h5>Thông tin liên hệ</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="HoTen" class="form-label">
+                                Họ tên
+                            </label>
+                            <input asp-for="HoTen" class="form-control" />
+                            <span asp-validation-for="HoTen"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SoDienThoai" class="form-label">
+                                Số điện thoại
+                            </label>
+                            <input asp-for="SoDienThoai" class="form-control" />
+                            <span asp-validation-for="SoDienThoai"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email"
+                                   type="email"
+                                   class="form-control" />
+                            <span asp-validation-for="Email"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="GhiChu" class="form-label">
+                                Ghi chú
+                            </label>
+                            <textarea asp-for="GhiChu"
+                                      class="form-control"
+                                      rows="3"></textarea>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100"
+                                disabled="@(!Model.DanhSachBan.Any())">
+                            Gửi yêu cầu đặt bàn
+                        </button>
+                    </form>
+
+                    <p class="small text-muted mt-3 mb-0">
+                        Yêu cầu đặt bàn sẽ ở trạng thái chờ xác nhận.
+                        Thời lượng mỗi lượt đặt được giả định là 2 tiếng.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="DatBan"
+           asp-action="LichSu"
+           class="btn btn-outline-secondary">
+            Tra cứu lịch sử đặt bàn
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function chonBan(maBan) {
+            const select = document.getElementById("MaBan");
+            if (select) {
+                select.value = maBan;
+                select.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }
+    </script>
+}
