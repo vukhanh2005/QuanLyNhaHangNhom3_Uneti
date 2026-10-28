@@ -21,12 +21,18 @@ namespace QuanLyNhaHang.Controllers.Module04
             // Tổng số món ăn
             int tongSoMonAn = await _context.MonAns.CountAsync();
 
-            // Thống kê số bàn theo loại
+            // Tổng số phiếu đặt bàn
+            int tongSoPhieuDatBan = await _context.PhieuDatBans.CountAsync();
+
+            // Thống kê số bàn theo tên loại bàn
             var soBanTheoLoai = await _context.BanAns
-                .GroupBy(b => b.MaLoaiBan)
+                .Include(b => b.LoaiBan)
+                .GroupBy(b => b.LoaiBan != null
+                    ? b.LoaiBan.TenLoaiBan
+                    : "Chưa phân loại")
                 .Select(g => new ThongKeViewModel
                 {
-                    Nhom = "Loại bàn " + g.Key,
+                    Nhom = g.Key,
                     SoLuong = g.Count()
                 })
                 .OrderByDescending(x => x.SoLuong)
@@ -43,15 +49,32 @@ namespace QuanLyNhaHang.Controllers.Module04
                 .OrderByDescending(x => x.SoLuong)
                 .ToListAsync();
 
+            // Thống kê phiếu đặt bàn theo trạng thái
+            var phieuDatBanTheoTrangThai = await _context.PhieuDatBans
+                .GroupBy(p => p.TrangThai)
+                .Select(g => new ThongKeViewModel
+                {
+                    Nhom = g.Key,
+                    SoLuong = g.Count()
+                })
+                .OrderByDescending(x => x.SoLuong)
+                .ToListAsync();
+
+            // Tạo ViewModel truyền dữ liệu sang giao diện
             var model = new StatisticsViewModel
             {
                 TongSoBan = tongSoBan,
                 TongSoMonAn = tongSoMonAn,
+                TongSoPhieuDatBan = tongSoPhieuDatBan,
                 SoBanTheoLoai = soBanTheoLoai,
-                SoBanTheoTrangThai = soBanTheoTrangThai
+                SoBanTheoTrangThai = soBanTheoTrangThai,
+                PhieuDatBanTheoTrangThai = phieuDatBanTheoTrangThai
             };
 
-            return View("~/Views/Module04/Statistics/Index.cshtml", model);
+            return View(
+                "~/Views/Module04/Statistics/Index.cshtml",
+                model
+            );
         }
     }
 }

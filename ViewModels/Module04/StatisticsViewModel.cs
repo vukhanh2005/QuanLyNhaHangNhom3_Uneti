@@ -15,6 +15,12 @@ namespace QuanLyNhaHang.ViewModels.Module04
         // Số bàn theo trạng thái
         public List<ThongKeViewModel> SoBanTheoTrangThai { get; set; }
             = new List<ThongKeViewModel>();
+            // Tổng số phiếu đặt bàn
+public int TongSoPhieuDatBan { get; set; }
+
+// Thống kê phiếu đặt bàn theo trạng thái
+public List<ThongKeViewModel> PhieuDatBanTheoTrangThai { get; set; }
+    = new List<ThongKeViewModel>();
     }
 
     public class ThongKeViewModel
