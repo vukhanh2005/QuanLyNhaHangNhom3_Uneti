@@ -148,31 +148,33 @@ namespace QuanLyNhaHang.Service.Implement
                     $"sang '{trangThaiMoi}'.");
             }
 
-            // Kiểm tra phiếu khác có cùng bàn và cùng thời điểm.
-            if (trangThaiMoi == "Đã xác nhận" ||
-                trangThaiMoi == "Đang sử dụng")
-            {
-                if (ban == null)
-                {
-                    return (false, "Phiếu chưa được gán bàn.");
-                }
+            // Mỗi lượt đặt bàn kéo dài 2 giờ.
+const int thoiLuongDatBanGio = 2;
 
-                var coPhieuTrung = await _context.PhieuDatBans
-                    .AnyAsync(p =>
-                        p.MaPhieuDatBan != id &&
-                        p.MaBan == ban.MaBan &&
-                        p.NgayGioDat == phieu.NgayGioDat &&
-                        (p.TrangThai == "Đã xác nhận" ||
-                         p.TrangThai == "Đang sử dụng"));
+if (trangThaiMoi == "Đã xác nhận" ||
+    trangThaiMoi == "Đang sử dụng")
+{
+    if (ban == null)
+        return (false, "Phiếu chưa được gán bàn.");
 
-                if (coPhieuTrung)
-                {
-                    return (
-                        false,
-                        "Bàn đã có phiếu được xác nhận hoặc đang sử dụng vào cùng thời điểm.");
-                }
-            }
+    var batDau = phieu.NgayGioDat;
+    var ketThuc = batDau.AddHours(thoiLuongDatBanGio);
 
+    var coPhieuTrung = await _context.PhieuDatBans
+        .AnyAsync(p =>
+            p.MaPhieuDatBan != id &&
+            p.MaBan == ban.MaBan &&
+            p.TrangThai != "Đã hủy" &&
+            p.NgayGioDat < ketThuc &&
+            p.NgayGioDat.AddHours(thoiLuongDatBanGio) > batDau);
+
+    if (coPhieuTrung)
+    {
+        return (
+            false,
+            "Bàn đã có phiếu đặt trùng khung giờ. Vui lòng kiểm tra lại.");
+    }
+}
             // Bắt đầu sử dụng bàn
             if (trangThaiMoi == "Đang sử dụng")
             {
