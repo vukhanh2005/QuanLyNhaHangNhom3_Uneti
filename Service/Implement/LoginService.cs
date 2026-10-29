@@ -65,8 +65,14 @@ namespace QuanLyNhaHang.Service
             if(account != null)
             {
                 if (account.MatKhau.Equals(password))
-                {
-                    string message = "[SUCCESS] Đăng nhập thành công";
+{
+    if (!account.TrangThai)
+    {
+        return new TaiKhoanResponse(
+            "[FAIL] Tài khoản đã bị khóa hoặc ngừng hoạt động");
+    }
+
+    string message = "[SUCCESS] Đăng nhập thành công";
                     //Acc dung
                     return new TaiKhoanResponse(
                         account.MaTaiKhoan,

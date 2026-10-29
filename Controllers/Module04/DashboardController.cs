@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyNhaHang.Models;
 using QuanLyNhaHang.ViewModels.Module04;
 
 namespace QuanLyNhaHang.Controllers.Module04
@@ -15,38 +16,36 @@ namespace QuanLyNhaHang.Controllers.Module04
 
         public async Task<IActionResult> Index()
         {
-            // Tổng số bàn ăn
-            int tongSoBan = await _context.BanAns.CountAsync();
+            var tongSoBan = await _context.BanAns.CountAsync();
 
-            // Tổng số món ăn
-            int tongSoMonAn = await _context.MonAns.CountAsync();
+            var tongSoMonAn = await _context.MonAns.CountAsync();
 
-            // Số bàn đang sử dụng
-            int soBanDangSuDung = await _context.BanAns
-                .CountAsync(b => b.TrangThai == "Đang sử dụng");
-
-            // Số bàn sẵn sàng
-            int soBanSanSang = await _context.BanAns
-                .CountAsync(b => b.TrangThai == "Sẵn sàng");
-
-            // Tạm thời thống kê số loại bàn dựa trên MaLoaiBan
-            int tongSoLoaiBan = await _context.BanAns
+            var tongSoLoaiBan = await _context.BanAns
                 .Select(b => b.MaLoaiBan)
                 .Distinct()
                 .CountAsync();
 
-            // Số bàn theo loại
+            var soBanDangSuDung = await _context.BanAns
+                .CountAsync(b => b.TrangThai == "Đang sử dụng");
+
+            var soBanSanSang = await _context.BanAns
+                .CountAsync(b => b.TrangThai == "Sẵn sàng");
+
+            // Thống kê số bàn theo tên loại bàn
             var soBanTheoLoai = await _context.BanAns
-                .GroupBy(b => b.MaLoaiBan)
+                .Include(b => b.LoaiBan)
+                .GroupBy(b => b.LoaiBan != null
+                    ? b.LoaiBan.TenLoaiBan
+                    : "Chưa phân loại")
                 .Select(g => new ThongKeBanViewModel
                 {
-                    Nhom = "Loại bàn " + g.Key,
+                    Nhom = g.Key,
                     SoLuong = g.Count()
                 })
-                .OrderByDescending(x => x.SoLuong)
+                .OrderBy(x => x.Nhom)
                 .ToListAsync();
 
-            // Số bàn theo trạng thái
+            // Thống kê số bàn theo trạng thái
             var soBanTheoTrangThai = await _context.BanAns
                 .GroupBy(b => b.TrangThai)
                 .Select(g => new ThongKeBanViewModel
@@ -54,7 +53,7 @@ namespace QuanLyNhaHang.Controllers.Module04
                     Nhom = g.Key,
                     SoLuong = g.Count()
                 })
-                .OrderByDescending(x => x.SoLuong)
+                .OrderBy(x => x.Nhom)
                 .ToListAsync();
 
             var model = new DashboardViewModel
@@ -68,7 +67,9 @@ namespace QuanLyNhaHang.Controllers.Module04
                 SoBanTheoTrangThai = soBanTheoTrangThai
             };
 
-            return View("~/Views/Module04/Dashboard/Index.cshtml", model);
+            return View(
+                "~/Views/Module04/Dashboard/Index.cshtml",
+                model);
         }
     }
 }

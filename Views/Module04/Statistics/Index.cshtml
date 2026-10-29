@@ -1,196 +1,173 @@
-
-@model QuanLyNhaHang.ViewModels.Module04.StatisticsViewModel
+ @model QuanLyNhaHang.ViewModels.Module04.StatisticsViewModel
 
 @{
-    ViewData["Title"] = "Thống kê";
-    Layout = "_Layout";
+    ViewData["Title"] = "Thống kê nhà hàng";
 }
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">Thống kê nhà hàng</h2>
-            <p class="text-muted mb-0">
-                Tổng quan tình hình bàn ăn, món ăn và phiếu đặt bàn
-            </p>
+            <p class="text-muted mb-0">Thống kê bàn ăn, món ăn và phiếu đặt bàn</p>
         </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Quay lại Dashboard
+        </a>
     </div>
 
-    <!-- Các thẻ tổng quan -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="text-muted mb-2">Tổng số bàn</div>
-                    <h2 class="fw-bold text-primary mb-0">
-                        @Model.TongSoBan
-                    </h2>
+                    <p class="text-muted mb-2">Tổng số bàn</p>
+                    <h2 class="fw-bold">@Model.TongSoBan</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="text-muted mb-2">Tổng số món ăn</div>
-                    <h2 class="fw-bold text-success mb-0">
-                        @Model.TongSoMonAn
-                    </h2>
+                    <p class="text-muted mb-2">Tổng số món ăn</p>
+                    <h2 class="fw-bold">@Model.TongSoMonAn</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="text-muted mb-2">
-                        Tổng số phiếu đặt bàn
-                    </div>
-                    <h2 class="fw-bold text-warning mb-0">
-                        @Model.TongSoPhieuDatBan
-                    </h2>
+                    <p class="text-muted mb-2">Tổng số phiếu đặt bàn</p>
+                    <h2 class="fw-bold">@Model.TongSoPhieuDatBan</h2>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Thống kê bàn theo loại -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0">Số bàn theo loại bàn</h5>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Số lượng bàn theo loại</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.SoBanTheoLoai.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Loại bàn</th>
+                                        <th class="text-end">Số lượng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.SoBanTheoLoai)
+                                    {
+                                        <tr>
+                                            <td>@item.Nhom</td>
+                                            <td class="text-end fw-semibold">@item.SoLuong</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
-            @if (Model.SoBanTheoLoai.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Loại bàn</th>
-                                <th class="text-end">Số lượng bàn</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                int sttLoai = 1;
-                            }
-                            @foreach (var item in Model.SoBanTheoLoai)
-                            {
-                                <tr>
-                                    <td>@sttLoai</td>
-                                    <td>@item.Nhom</td>
-                                    <td class="text-end fw-semibold">
-                                        @item.SoLuong
-                                    </td>
-                                </tr>
-                                sttLoai++;
-                            }
-                        </tbody>
-                    </table>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Số lượng bàn theo trạng thái</h5>
                 </div>
-            }
-            else
-            {
-                <p class="text-muted mb-0">
-                    Chưa có dữ liệu bàn ăn.
-                </p>
-            }
+                <div class="card-body">
+                    @if (Model.SoBanTheoTrangThai.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Trạng thái bàn</th>
+                                        <th class="text-end">Số lượng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.SoBanTheoTrangThai)
+                                    {
+                                        <tr>
+                                            <td>@(string.IsNullOrWhiteSpace(item.Nhom) ? "Chưa xác định" : item.Nhom)</td>
+                                            <td class="text-end fw-semibold">@item.SoLuong</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Số lượng phiếu đặt bàn theo trạng thái</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PhieuDatBanTheoTrangThai.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Chưa có dữ liệu phiếu đặt bàn.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Trạng thái phiếu</th>
+                                        <th class="text-end">Số lượng phiếu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PhieuDatBanTheoTrangThai)
+                                    {
+                                        <tr>
+                                            <td>@(string.IsNullOrWhiteSpace(item.Nhom) ? "Chưa xác định" : item.Nhom)</td>
+                                            <td class="text-end fw-semibold">@item.SoLuong</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Tổng số phiếu</th>
+                                        <th class="text-end">@Model.TongSoPhieuDatBan</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Thống kê bàn theo trạng thái -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0">Số bàn theo trạng thái</h5>
-        </div>
-
-        <div class="card-body">
-            @if (Model.SoBanTheoTrangThai.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Trạng thái</th>
-                                <th class="text-end">Số lượng bàn</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                int sttTrangThai = 1;
-                            }
-                            @foreach (var item in Model.SoBanTheoTrangThai)
-                            {
-                                <tr>
-                                    <td>@sttTrangThai</td>
-                                    <td>@item.Nhom</td>
-                                    <td class="text-end fw-semibold">
-                                        @item.SoLuong
-                                    </td>
-                                </tr>
-                                sttTrangThai++;
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p class="text-muted mb-0">
-                    Chưa có dữ liệu trạng thái bàn.
-                </p>
-            }
-        </div>
-    </div>
-
-    <!-- Thống kê phiếu đặt bàn theo trạng thái -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0">
-                Phiếu đặt bàn theo trạng thái
-            </h5>
-        </div>
-
-        <div class="card-body">
-            @if (Model.PhieuDatBanTheoTrangThai.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Trạng thái phiếu</th>
-                                <th class="text-end">Số lượng phiếu</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                int sttPhieu = 1;
-                            }
-                            @foreach (var item in Model.PhieuDatBanTheoTrangThai)
-                            {
-                                <tr>
-                                    <td>@sttPhieu</td>
-                                    <td>@item.Nhom</td>
-                                    <td class="text-end fw-semibold">
-                                        @item.SoLuong
-                                    </td>
-                                </tr>
-                                sttPhieu++;
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p class="text-muted mb-0">
-                    Chưa có dữ liệu phiếu đặt bàn.
-                </p>
-            }
-        </div>
+    <div class="mt-4">
+        <a asp-controller="PhieuDatBan"
+           asp-action="Index"
+           class="btn btn-primary">
+            Quản lý phiếu đặt bàn
+        </a>
     </div>
 </div>

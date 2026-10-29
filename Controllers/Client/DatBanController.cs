@@ -46,21 +46,23 @@ namespace QuanLyNhaHang.Controllers.Client
             }
 
             TempData["SuccessMessage"] = ketQua.ThongBao;
-
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
-        public async Task<IActionResult> LichSu(string email)
+        public async Task<IActionResult> LichSu()
         {
+            // Chỉ lấy email từ tài khoản đã đăng nhập
+            var email = HttpContext.Session.GetString("Email");
+
             if (string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.ErrorMessage = "Vui lòng nhập email để tra cứu lịch sử đặt bàn.";
-                return View("~/Views/Client/DatBan/LichSu.cshtml",
-                    new List<QuanLyNhaHang.Models.PhieuDatBan>());
-            }
+                TempData["ErrorMessage"] =
+                    "Vui lòng đăng nhập để xem lịch sử đặt bàn.";
 
-            ViewBag.Email = email.Trim();
+                return RedirectToAction("Login", "Account",
+                    new { area = "" });
+            }
 
             var danhSach = await _service.GetLichSuAsync(email);
 

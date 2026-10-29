@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.Service.Interface;
 
@@ -36,9 +35,7 @@ namespace QuanLyNhaHang.Controllers.Module04
             var phieu = await _phieuDatBanService.GetChiTietAsync(id);
 
             if (phieu == null)
-            {
                 return NotFound();
-            }
 
             return View(
                 "~/Views/Module04/PhieuDatBan/Details.cshtml",
@@ -57,13 +54,73 @@ namespace QuanLyNhaHang.Controllers.Module04
                     trangThaiMoi);
 
             if (ketQua.ThanhCong)
-            {
                 TempData["SuccessMessage"] = ketQua.ThongBao;
-            }
             else
-            {
                 TempData["ErrorMessage"] = ketQua.ThongBao;
-            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XacNhan(int id)
+        {
+            var ketQua =
+                await _phieuDatBanService.CapNhatTrangThaiAsync(
+                    id, "Đã xác nhận");
+
+            if (ketQua.ThanhCong)
+                TempData["SuccessMessage"] = ketQua.ThongBao;
+            else
+                TempData["ErrorMessage"] = ketQua.ThongBao;
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Huy(int id)
+        {
+            var ketQua =
+                await _phieuDatBanService.CapNhatTrangThaiAsync(
+                    id, "Đã hủy");
+
+            if (ketQua.ThanhCong)
+                TempData["SuccessMessage"] = ketQua.ThongBao;
+            else
+                TempData["ErrorMessage"] = ketQua.ThongBao;
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BatDauSuDung(int id)
+        {
+            var ketQua =
+                await _phieuDatBanService.CapNhatTrangThaiAsync(
+                    id, "Đang sử dụng");
+
+            if (ketQua.ThanhCong)
+                TempData["SuccessMessage"] = ketQua.ThongBao;
+            else
+                TempData["ErrorMessage"] = ketQua.ThongBao;
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KetThucSuDung(int id)
+        {
+            var ketQua =
+                await _phieuDatBanService.CapNhatTrangThaiAsync(
+                    id, "Đã sử dụng");
+
+            if (ketQua.ThanhCong)
+                TempData["SuccessMessage"] = ketQua.ThongBao;
+            else
+                TempData["ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
         }

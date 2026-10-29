@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Service.Interface;
@@ -28,7 +27,6 @@ namespace QuanLyNhaHang.Service.Implement
                 .Include(p => p.BanAn)
                 .AsQueryable();
 
-            // Tìm theo tên khách hàng
             if (!string.IsNullOrWhiteSpace(tenKhachHang))
             {
                 var ten = tenKhachHang.Trim();
@@ -38,7 +36,6 @@ namespace QuanLyNhaHang.Service.Implement
                     p.KhachHang.HoTen.Contains(ten));
             }
 
-            // Tìm theo tên bàn
             if (!string.IsNullOrWhiteSpace(tenBan))
             {
                 var ten = tenBan.Trim();
@@ -48,15 +45,12 @@ namespace QuanLyNhaHang.Service.Implement
                     p.BanAn.TenBan.Contains(ten));
             }
 
-            // Lọc theo trạng thái
             if (!string.IsNullOrWhiteSpace(trangThai))
             {
                 var status = trangThai.Trim();
-
                 query = query.Where(p => p.TrangThai == status);
             }
 
-            // Lọc theo ngày sử dụng
             if (ngaySuDung.HasValue)
             {
                 var ngay = ngaySuDung.Value.Date;
@@ -81,7 +75,7 @@ namespace QuanLyNhaHang.Service.Implement
             };
         }
 
-        // Lấy chi tiết một phiếu đặt bàn
+        // Lấy chi tiết phiếu đặt bàn
         public async Task<PhieuDatBan?> GetChiTietAsync(int id)
         {
             return await _context.PhieuDatBans
@@ -93,53 +87,55 @@ namespace QuanLyNhaHang.Service.Implement
                     p => p.MaPhieuDatBan == id);
         }
 
-        // Cập nhật trạng thái phiếu đặt bàn
+        // Cập nhật trạng thái phiếu và trạng thái bàn
         public async Task<(bool ThanhCong, string ThongBao)>
             CapNhatTrangThaiAsync(int id, string trangThaiMoi)
         {
-            var phieu = await _context.PhieuDatBans
-                .FirstOrDefaultAsync(
-                    p => p.MaPhieuDatBan == id);
-
-            if (phieu == null)
-            {
-                return (
-                    false,
-                    "Không tìm thấy phiếu đặt bàn.");
-            }
-
             if (string.IsNullOrWhiteSpace(trangThaiMoi))
             {
-                return (
-                    false,
-                    "Vui lòng chọn trạng thái.");
+                return (false, "Vui lòng chọn trạng thái.");
             }
 
             var trangThaiHopLe = new[]
             {
                 "Chờ xác nhận",
                 "Đã xác nhận",
-                "Đã hủy",
-                "Đã sử dụng"
+                "Đang sử dụng",
+                "Đã sử dụng",
+                "Đã hủy"
             };
 
             if (!trangThaiHopLe.Contains(trangThaiMoi))
             {
-                return (
-                    false,
-                    "Trạng thái được chọn không hợp lệ.");
+                return (false, "Trạng thái được chọn không hợp lệ.");
             }
 
+            var phieu = await _context.PhieuDatBans
+                .Include(p => p.BanAn)
+                .FirstOrDefaultAsync(
+                    p => p.MaPhieuDatBan == id);
+
+            if (phieu == null)
+            {
+                return (false, "Không tìm thấy phiếu đặt bàn.");
+            }
+
+            var trangThaiCu = phieu.TrangThai;
+            var ban = phieu.BanAn;
+
             // Kiểm tra quy tắc chuyển trạng thái
-            var duocChuyen = phieu.TrangThai switch
+            var duocChuyen = trangThaiCu switch
             {
                 "Chờ xác nhận" =>
                     trangThaiMoi == "Đã xác nhận" ||
                     trangThaiMoi == "Đã hủy",
 
                 "Đã xác nhận" =>
-                    trangThaiMoi == "Đã sử dụng" ||
+                    trangThaiMoi == "Đang sử dụng" ||
                     trangThaiMoi == "Đã hủy",
+
+                "Đang sử dụng" =>
+                    trangThaiMoi == "Đã sử dụng",
 
                 _ => false
             };
@@ -148,8 +144,63 @@ namespace QuanLyNhaHang.Service.Implement
             {
                 return (
                     false,
-                    $"Không thể chuyển từ '{phieu.TrangThai}' " +
+                    $"Không thể chuyển từ '{trangThaiCu}' " +
                     $"sang '{trangThaiMoi}'.");
+            }
+
+            // Kiểm tra phiếu khác có cùng bàn và cùng thời điểm.
+            if (trangThaiMoi == "Đã xác nhận" ||
+                trangThaiMoi == "Đang sử dụng")
+            {
+                if (ban == null)
+                {
+                    return (false, "Phiếu chưa được gán bàn.");
+                }
+
+                var coPhieuTrung = await _context.PhieuDatBans
+                    .AnyAsync(p =>
+                        p.MaPhieuDatBan != id &&
+                        p.MaBan == ban.MaBan &&
+                        p.NgayGioDat == phieu.NgayGioDat &&
+                        (p.TrangThai == "Đã xác nhận" ||
+                         p.TrangThai == "Đang sử dụng"));
+
+                if (coPhieuTrung)
+                {
+                    return (
+                        false,
+                        "Bàn đã có phiếu được xác nhận hoặc đang sử dụng vào cùng thời điểm.");
+                }
+            }
+
+            // Bắt đầu sử dụng bàn
+            if (trangThaiMoi == "Đang sử dụng")
+            {
+                if (ban == null)
+                {
+                    return (false, "Phiếu chưa được gán bàn.");
+                }
+
+                if (ban.TrangThai != "Sẵn sàng")
+                {
+                    return (false, "Bàn hiện không sẵn sàng.");
+                }
+
+                ban.TrangThai = "Đang sử dụng";
+            }
+
+            // Kết thúc sử dụng bàn
+            if (trangThaiMoi == "Đã sử dụng")
+            {
+                if (ban == null ||
+                    ban.TrangThai != "Đang sử dụng")
+                {
+                    return (
+                        false,
+                        "Trạng thái bàn không hợp lệ.");
+                }
+
+                ban.TrangThai = "Sẵn sàng";
             }
 
             phieu.TrangThai = trangThaiMoi;
