@@ -8,11 +8,12 @@ namespace QuanLyNhaHang.Controllers
     {
         private readonly ILoaiBanService loaiBanService;
         private readonly IMonAnService monAnService;
-
-        public TrangChuController(ILoaiBanService loaiBanService, IMonAnService monAnService)
+        private readonly AppDbContext context;
+        public TrangChuController(ILoaiBanService loaiBanService, IMonAnService monAnService, AppDbContext context)
         {
             this.loaiBanService = loaiBanService;
             this.monAnService = monAnService;
+            this.context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -30,7 +31,8 @@ namespace QuanLyNhaHang.Controllers
                         TongLoaiBan = loaiBans.Count,
                         LoaiBanHoatDong = loaiBans.Count(x => x.TrangThai),
                         TongMonAn = monAns.Count,
-                        MonAnDangPhucVu = monAns.Count(x => x.TrangThai == TrangThaiMonAn.DangPhucVu)
+                        MonAnDangPhucVu = monAns.Count(x => x.TrangThai == TrangThaiMonAn.DangPhucVu),
+                        TongSoBan = context.BanAns.Count()
                     });
                 }
                 else

@@ -93,7 +93,7 @@ namespace QuanLyNhaHang.Service.Implement
             // Kiểm tra username, password rỗng
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                return new TaiKhoanResponse("Tài khoản hoặc mật khẩu không chính xác");
+                return new TaiKhoanResponse("Dữ liệu không được để trống!");
             }
 
             TaiKhoan account = await repository.getAccountByUsername(username);

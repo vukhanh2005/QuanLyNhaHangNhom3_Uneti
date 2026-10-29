@@ -5,7 +5,13 @@
     ViewData["Title"] = editing ? "Sửa loại bàn" : "Thêm loại bàn";
 }
 <form asp-action="@(editing ? "Sua" : "Them")" asp-route-id="@ViewData["Id"]" method="post" class="admin-panel p-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    @* <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div> *@
+    @{
+        if(ViewData["FailMessage"] != null)
+        {
+            <span>Co loi xay ra: @ViewData["FailMessage"]</span>
+        }
+    }
     <div class="mb-3">
         <label asp-for="TenLoaiBan" class="form-label"></label>
         <input asp-for="TenLoaiBan" class="form-control" maxlength="100" />
@@ -24,6 +30,6 @@
     <button class="btn btn-success" type="submit">Lưu loại bàn</button>
     <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
 </form>
-@section Scripts {
+@* @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+} *@

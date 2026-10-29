@@ -26,7 +26,10 @@ public class LoaiBanController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index() => View(await service.GetAllLoaiBan());
+    public async Task<IActionResult> Index()
+    {
+        return View(await service.GetAllLoaiBan());
+    }
 
     [HttpGet]
     public async Task<IActionResult> ChiTiet(int id)
@@ -36,7 +39,10 @@ public class LoaiBanController : Controller
     }
 
     [HttpGet]
-    public IActionResult Them() => View("Form", new LoaiBanRequest());
+    public IActionResult Them()
+    {
+        return View("Form", new LoaiBanRequest());
+    }
 
     [HttpPost]
     public async Task<IActionResult> Them(LoaiBanRequest request)
@@ -73,11 +79,11 @@ public class LoaiBanController : Controller
         var result = await service.Sua(id, request);
         if (!result.IsSuccess)
         {
-            ModelState.AddModelError(string.Empty, result.message ?? "Không thể sửa loại bàn.");
+            ViewData["FailMessage"] = result.message;
             return View("Form", request);
         }
         TempData["SuccessMessage"] = result.message;
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index)); 
     }
 
     [HttpGet]
@@ -98,7 +104,7 @@ public class LoaiBanController : Controller
         if (!result.IsSuccess)
         {
             ViewData["ConfirmDelete"] = true;
-            ModelState.AddModelError(string.Empty, result.message ?? "Không thể xóa loại bàn.");
+            ViewData["FailMessage"] = result.message;
             return View("ChiTiet", item);
         }
         TempData["SuccessMessage"] = result.message;

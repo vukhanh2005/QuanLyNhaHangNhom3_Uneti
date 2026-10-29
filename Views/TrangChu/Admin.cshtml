@@ -5,7 +5,7 @@
     ViewData["Description"] = "Tổng quan hoạt động và tình trạng phục vụ của nhà hàng.";
     var metrics = new[] {
         (Title: "Tổng số loại bàn", Value: (int?)Model.TongLoaiBan, Detail: $"{Model.LoaiBanHoatDong} hoạt động · {Model.TongLoaiBan - Model.LoaiBanHoatDong} ngừng hoạt động"),
-        (Title: "Tổng số bàn ăn", Value: (int?)null, Detail: "Chưa có dữ liệu kết nối"),
+        (Title: "Tổng số bàn ăn", Value: (int?)Model.TongSoBan, Detail: "Chưa có dữ liệu kết nối"),
         (Title: "Tổng số món ăn", Value: (int?)Model.TongMonAn, Detail: $"{Model.MonAnDangPhucVu} đang phục vụ · {Model.TongMonAn - Model.MonAnDangPhucVu} ngừng phục vụ"),
         (Title: "Tổng số khách hàng", Value: (int?)null, Detail: "Chưa có dữ liệu kết nối"),
         (Title: "Tổng số phiếu đặt bàn", Value: (int?)null, Detail: "Chưa có dữ liệu kết nối"),

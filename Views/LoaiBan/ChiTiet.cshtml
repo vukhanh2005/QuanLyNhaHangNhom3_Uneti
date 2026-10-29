@@ -5,7 +5,13 @@
     ViewData["Title"] = deleting ? "Xóa loại bàn" : "Chi tiết loại bàn";
 }
 <section class="admin-panel p-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    @* <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div> *@
+    @{
+        if(ViewData["FailMessage"] != null)
+        {
+            <span>Co loi xay ra: @ViewData["FailMessage"]</span>
+        }
+    }
     <dl>
         <dt>Tên loại bàn</dt><dd>@Model.TenLoaiBan</dd>
         <dt>Mô tả</dt><dd class="text-break">@(string.IsNullOrEmpty(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)</dd>
