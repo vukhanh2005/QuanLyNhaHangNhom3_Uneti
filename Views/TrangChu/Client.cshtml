@@ -24,7 +24,7 @@
 <section id="huong-dan" class="booking-guide" aria-label="Hướng dẫn đặt bàn">
     <div><span class="step">01</span><div><h2>Chọn bàn phù hợp</h2><p>Tra cứu vị trí, loại bàn và số chỗ ngồi.</p></div></div>
     <div><span class="step">02</span><div><h2>Hẹn ngày, chọn giờ</h2><p>Chọn thời gian, số người và ghi chú.</p></div></div>
-    <div><span class="step">03</span><div><h2>Theo dõi xác nhận</h2><p>Kiểm tra trạng thái trong phiếu đặt bàn.</p></div></div>
+    <div><span class="step">03</span><div><h2>Gửi yêu cầu đặt bàn</h2><p>Phiếu được tạo ở trạng thái chờ nhà hàng xác nhận.</p></div></div>
 </section>
 <section class="discover" aria-labelledby="discover-title">
     <div class="section-heading"><div><p class="eyebrow">DÀNH CHO BẠN</p><h2 id="discover-title">Lên hẹn cho bữa ăn tiếp theo</h2></div><p>Mọi thông tin cho cuộc hẹn, ngay tại đây.</p></div>
@@ -41,16 +41,15 @@
         </article>
         <article id="phieu-dat-ban" class="feature-card">
             <span class="card-number">03 / PHIẾU ĐẶT BÀN</span><h3>Cuộc hẹn của bạn</h3>
-            <p>Theo dõi phiếu chờ xác nhận, đã xác nhận và xem thông tin từng cuộc hẹn.</p>
-            <a class="button" asp-controller="PhieuDatBan" asp-action="Index">Xem phiếu đặt bàn</a>
+            <p>Chọn ngày, giờ và số người để gửi yêu cầu đặt bàn tới nhà hàng.</p>
+            <a class="button" asp-controller="PhieuDatBan" asp-action="DatBan">Đăng ký đặt bàn</a>
         </article>
     </div>
 </section>
 <div class="personal-grid">
     <section id="lich-su" class="personal-panel" aria-labelledby="history-title">
         <p class="eyebrow">NHỮNG CUỘC HẸN ĐÃ QUA</p><h2 id="history-title">Lịch sử đặt bàn</h2>
-        <p>Xem lại các phiếu đã sử dụng và đã hủy của bạn.</p>
-        <a class="text-link" asp-controller="PhieuDatBan" asp-action="Index">Xem các phiếu của tôi</a>
+        <p class="muted">Chức năng xem lịch sử đặt bàn đang được chuẩn bị.</p>
     </section>
     <section id="tai-khoan" class="personal-panel" aria-labelledby="profile-title">
         <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p><h2 id="profile-title">Thông tin cá nhân</h2>

@@ -10,7 +10,7 @@
         (Label: "Bàn ăn", Controller: "BanAn", Action: "Index", Ready: true),
         (Label: "Món ăn", Controller: "MonAn", Action: "Index", Ready: true),
         (Label: "Khách hàng", Controller: "KhachHang", Action: "Index", Ready: false),
-        (Label: "Phiếu đặt bàn", Controller: "PhieuDatBan", Action: "Index", Ready: true),
+        (Label: "Phiếu đặt bàn", Controller: "PhieuDatBan", Action: "Index", Ready: false),
         (Label: "Sử dụng bàn", Controller: "BanAn", Action: "SuDung", Ready: false),
         (Label: "Thống kê", Controller: "ThongKe", Action: "Index", Ready: false)
     };
@@ -83,6 +83,14 @@
                     <p class="admin-description">@description</p>
                 }
             </div>
+            @if (TempData["PhieuDatBanSuccess"] is string success)
+            {
+                <div class="alert alert-success" role="status">@success</div>
+            }
+            @if (TempData["PhieuDatBanError"] is string error)
+            {
+                <div class="alert alert-danger" role="alert">@error</div>
+            }
             @RenderBody()
         </main>
         <footer class="admin-footer"><span>© @DateTime.Now.Year · Nhà hàng · Nhóm 3</span><span>Hệ thống quản lý và đặt bàn</span></footer>

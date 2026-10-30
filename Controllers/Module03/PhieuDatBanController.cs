@@ -30,15 +30,11 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken = default)
+    public IActionResult Index()
     {
-        var isAdmin = Module2AdminAttribute.IsAdmin(HttpContext.Session);
-        var maTaiKhoan = isAdmin ? (int?)null : HttpContext.Session.GetInt32("MaTaiKhoan")!.Value;
-        return View(new PhieuDatBanIndexViewModel
-        {
-            IsAdmin = isAdmin,
-            PhieuDatBans = await service.GetAll(maTaiKhoan, cancellationToken)
-        });
+        // Giữ đường dẫn cũ hoạt động sau khi bỏ trang danh sách phiếu.
+        if (IsCustomer()) return RedirectToAction(nameof(DatBan));
+        return RedirectToAction("Index", "TrangChu");
     }
 
     [HttpGet]
@@ -68,7 +64,7 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
             if (result.IsSuccess)
             {
                 TempData["PhieuDatBanSuccess"] = result.Message;
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(DatBan));
             }
             foreach (var error in result.Errors)
             {
@@ -85,11 +81,13 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
     public async Task<IActionResult> Huy([FromRoute] int id, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid || id <= 0) return BadRequest("Mã phiếu không hợp lệ.");
-        var maTaiKhoan = Module2AdminAttribute.IsAdmin(HttpContext.Session)
+        var isAdmin = Module2AdminAttribute.IsAdmin(HttpContext.Session);
+        var maTaiKhoan = isAdmin
             ? (int?)null : HttpContext.Session.GetInt32("MaTaiKhoan")!.Value;
         var result = await service.Huy(id, maTaiKhoan, cancellationToken);
         TempData[result.IsSuccess ? "PhieuDatBanSuccess" : "PhieuDatBanError"] = result.Message;
-        return RedirectToAction(nameof(Index));
+        if (isAdmin) return RedirectToAction("Index", "TrangChu");
+        return RedirectToAction(nameof(DatBan));
     }
 
     private bool IsCustomer() => HttpContext.Session.GetString("VaiTro") == "User";
