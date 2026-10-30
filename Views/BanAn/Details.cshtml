@@ -3,6 +3,7 @@
    Nội dung thực hiện: Giao diện xem chi tiết bàn ăn và tên loại bàn. *@
 @model QuanLyNhaHangNhom3_Uneti.Models.BanAn
 @using QuanLyNhaHang.Filters
+@using QuanLyNhaHangNhom3_Uneti.Models
 @{
     ViewData["Title"] = "Chi tiết bàn ăn";
     var isAdmin = Module2AdminAttribute.IsAdmin(Context.Session);
@@ -18,6 +19,9 @@
 <partial name="_Details" model="Model" />
 @if (Module2AdminAttribute.IsAdmin(Context.Session)) {
     <a asp-action="Edit" asp-route-id="@Model.MaBan" class="btn btn-primary">Sửa bàn</a>
+}
+else if (Model.TrangThai == BanAnTrangThai.SanSang || Model.TrangThai == BanAnTrangThai.DangSuDung) {
+    <a asp-controller="PhieuDatBan" asp-action="DatBan" asp-route-maBan="@Model.MaBan" class="btn btn-primary">Đặt bàn này</a>
 }
 <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách</a>
 </section>

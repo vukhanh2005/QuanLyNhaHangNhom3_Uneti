@@ -35,7 +35,7 @@ namespace QuanLyNhaHang.Models
 
         [ForeignKey(nameof(MaTaiKhoan))]
         public TaiKhoan TaiKhoan { get; set; } = null!;
-       // public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
+        public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
 
     }
 }

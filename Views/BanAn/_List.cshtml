@@ -3,6 +3,7 @@
    Nội dung thực hiện: Hiển thị danh sách bàn ăn, tìm kiếm, lọc, sắp xếp và phân trang. *@
 @model QuanLyNhaHang.ViewModels.BanAnIndexViewModel
 @using QuanLyNhaHang.Filters
+@using QuanLyNhaHangNhom3_Uneti.Models
 @{
     var isAdmin = Module2AdminAttribute.IsAdmin(Context.Session);
     var routes = new Dictionary<string, string> {
@@ -64,6 +65,9 @@
             <td>@item.SoChoNgoi</td><td>@item.ViTri</td><td>@item.TrangThai</td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.MaBan" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                @if (!isAdmin && (item.TrangThai == BanAnTrangThai.SanSang || item.TrangThai == BanAnTrangThai.DangSuDung)) {
+                    <a asp-controller="PhieuDatBan" asp-action="DatBan" asp-route-maBan="@item.MaBan" class="btn btn-sm btn-primary">Đặt bàn</a>
+                }
                 @if (isAdmin) {
                     <a asp-action="Edit" asp-route-id="@item.MaBan" class="btn btn-sm btn-outline-secondary">Sửa</a>
                     <a asp-action="Delete" asp-route-id="@item.MaBan" class="btn btn-sm btn-outline-danger">Xóa</a>
