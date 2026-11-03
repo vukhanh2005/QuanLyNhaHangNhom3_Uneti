@@ -1,4 +1,3 @@
-
 using System;
 using System.Threading.Tasks;
 using QuanLyNhaHang.Models;
@@ -9,6 +8,12 @@ namespace QuanLyNhaHang.Service.Interface
     public interface IPhieuDatBanService
     {
         Task<PhieuDatBanViewModel> GetDanhSachAsync(
+            string? tenKhachHang,
+            string? tenBan,
+            string? trangThai,
+            DateTime? ngaySuDung);
+            Task<PhieuDatBanViewModel> GetDanhSachTheoTaiKhoanAsync(
+            int maTaiKhoan,
             string? tenKhachHang,
             string? tenBan,
             string? trangThai,

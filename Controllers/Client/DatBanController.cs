@@ -13,9 +13,23 @@ namespace QuanLyNhaHang.Controllers.Client
             _service = service;
         }
 
+        private int? MaTaiKhoan =>
+            HttpContext.Session.GetInt32("MaTaiKhoan");
+
+        private bool DaDangNhap => MaTaiKhoan.HasValue;
+
+        private IActionResult VeTrangDangNhap()
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Hiển thị trang đặt bàn.
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            if (!DaDangNhap)
+                return VeTrangDangNhap();
+
             var model = new TaoPhieuDatBanViewModel
             {
                 DanhSachBan = await _service.GetDanhSachBanAsync(),
@@ -25,48 +39,61 @@ namespace QuanLyNhaHang.Controllers.Client
             return View("~/Views/Client/DatBan/Index.cshtml", model);
         }
 
+        // Xử lý đặt bàn.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TaoPhieuDatBanViewModel model)
+        public async Task<IActionResult> Create(
+            TaoPhieuDatBanViewModel model)
         {
+            if (!DaDangNhap)
+                return VeTrangDangNhap();
+
             if (!ModelState.IsValid)
             {
-                model.DanhSachBan = await _service.GetDanhSachBanAsync();
-                return View("~/Views/Client/DatBan/Index.cshtml", model);
+                model.DanhSachBan =
+                    await _service.GetDanhSachBanAsync();
+
+                return View(
+                    "~/Views/Client/DatBan/Index.cshtml",
+                    model);
             }
 
-            var ketQua = await _service.TaoPhieuDatBanAsync(model);
+            var ketQua = await _service.TaoPhieuDatBanAsync(
+                model,
+                MaTaiKhoan!.Value);
 
             if (!ketQua.ThanhCong)
             {
-                ModelState.AddModelError(string.Empty, ketQua.ThongBao);
-                model.DanhSachBan = await _service.GetDanhSachBanAsync();
+                ModelState.AddModelError(
+                    string.Empty,
+                    ketQua.ThongBao);
 
-                return View("~/Views/Client/DatBan/Index.cshtml", model);
+                model.DanhSachBan =
+                    await _service.GetDanhSachBanAsync();
+
+                return View(
+                    "~/Views/Client/DatBan/Index.cshtml",
+                    model);
             }
 
             TempData["SuccessMessage"] = ketQua.ThongBao;
+
             return RedirectToAction(nameof(Index));
         }
 
+        // Lịch sử đặt bàn của tài khoản hiện tại.
         [HttpGet]
         public async Task<IActionResult> LichSu()
         {
-            // Chỉ lấy email từ tài khoản đã đăng nhập
-            var email = HttpContext.Session.GetString("Email");
+            if (!DaDangNhap)
+                return VeTrangDangNhap();
 
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                TempData["ErrorMessage"] =
-                    "Vui lòng đăng nhập để xem lịch sử đặt bàn.";
+            var danhSach = await _service.GetLichSuAsync(
+                MaTaiKhoan!.Value);
 
-                return RedirectToAction("Login", "Account",
-                    new { area = "" });
-            }
-
-            var danhSach = await _service.GetLichSuAsync(email);
-
-            return View("~/Views/Client/DatBan/LichSu.cshtml", danhSach);
+            return View(
+                "~/Views/Client/DatBan/LichSu.cshtml",
+                danhSach);
         }
     }
 }

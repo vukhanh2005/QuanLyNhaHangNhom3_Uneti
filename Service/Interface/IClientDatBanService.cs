@@ -8,8 +8,9 @@ namespace QuanLyNhaHang.Service.Interface
         Task<List<BanAn>> GetDanhSachBanAsync();
 
         Task<(bool ThanhCong, string ThongBao)> TaoPhieuDatBanAsync(
-            TaoPhieuDatBanViewModel model);
+            TaoPhieuDatBanViewModel model,
+            int maTaiKhoan);
 
-        Task<List<PhieuDatBan>> GetLichSuAsync(string email);
+        Task<List<PhieuDatBan>> GetLichSuAsync(int maTaiKhoan);
     }
 }

@@ -8,6 +8,15 @@ namespace QuanLyNhaHang.Controllers.Module04
     {
         private readonly AppDbContext _context;
 
+        private bool DaDangNhap =>
+            HttpContext.Session.GetInt32("MaTaiKhoan").HasValue;
+
+        private bool LaAdmin =>
+            string.Equals(
+                HttpContext.Session.GetString("VaiTro"),
+                "Admin",
+                StringComparison.OrdinalIgnoreCase);
+
         public StatisticsController(AppDbContext context)
         {
             _context = context;
@@ -15,16 +24,20 @@ namespace QuanLyNhaHang.Controllers.Module04
 
         public async Task<IActionResult> Index()
         {
-            // Tổng số bàn
+            // Chưa đăng nhập
+            if (!DaDangNhap)
+                return RedirectToAction("Login", "Account");
+
+            // Không phải Admin
+            if (!LaAdmin)
+                return RedirectToAction("Index", "TrangChu");
+
             int tongSoBan = await _context.BanAns.CountAsync();
 
-            // Tổng số món ăn
             int tongSoMonAn = await _context.MonAns.CountAsync();
 
-            // Tổng số phiếu đặt bàn
             int tongSoPhieuDatBan = await _context.PhieuDatBans.CountAsync();
 
-            // Thống kê số bàn theo tên loại bàn
             var soBanTheoLoai = await _context.BanAns
                 .Include(b => b.LoaiBan)
                 .GroupBy(b => b.LoaiBan != null
@@ -38,7 +51,6 @@ namespace QuanLyNhaHang.Controllers.Module04
                 .OrderByDescending(x => x.SoLuong)
                 .ToListAsync();
 
-            // Thống kê số bàn theo trạng thái
             var soBanTheoTrangThai = await _context.BanAns
                 .GroupBy(b => b.TrangThai)
                 .Select(g => new ThongKeViewModel
@@ -49,7 +61,6 @@ namespace QuanLyNhaHang.Controllers.Module04
                 .OrderByDescending(x => x.SoLuong)
                 .ToListAsync();
 
-            // Thống kê phiếu đặt bàn theo trạng thái
             var phieuDatBanTheoTrangThai = await _context.PhieuDatBans
                 .GroupBy(p => p.TrangThai)
                 .Select(g => new ThongKeViewModel
@@ -60,7 +71,6 @@ namespace QuanLyNhaHang.Controllers.Module04
                 .OrderByDescending(x => x.SoLuong)
                 .ToListAsync();
 
-            // Tạo ViewModel truyền dữ liệu sang giao diện
             var model = new StatisticsViewModel
             {
                 TongSoBan = tongSoBan,

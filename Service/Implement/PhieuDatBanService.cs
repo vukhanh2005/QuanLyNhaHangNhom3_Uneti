@@ -74,7 +74,66 @@ namespace QuanLyNhaHang.Service.Implement
                 NgaySuDung = ngaySuDung
             };
         }
+         public async Task<PhieuDatBanViewModel> GetDanhSachTheoTaiKhoanAsync(
+    int maTaiKhoan,
+    string? tenKhachHang,
+    string? tenBan,
+    string? trangThai,
+    DateTime? ngaySuDung)
+{
+    var query = _context.PhieuDatBans
+        .AsNoTracking()
+        .Include(p => p.KhachHang)
+        .Include(p => p.BanAn)
+        .Where(p => p.KhachHang != null &&
+                    p.KhachHang.MaTaiKhoan == maTaiKhoan)
+        .AsQueryable();
 
+    if (!string.IsNullOrWhiteSpace(tenKhachHang))
+    {
+        var ten = tenKhachHang.Trim();
+        query = query.Where(p =>
+            p.KhachHang != null &&
+            p.KhachHang.HoTen.Contains(ten));
+    }
+
+    if (!string.IsNullOrWhiteSpace(tenBan))
+    {
+        var ten = tenBan.Trim();
+        query = query.Where(p =>
+            p.BanAn != null &&
+            p.BanAn.TenBan.Contains(ten));
+    }
+
+    if (!string.IsNullOrWhiteSpace(trangThai))
+    {
+        var status = trangThai.Trim();
+        query = query.Where(p => p.TrangThai == status);
+    }
+
+    if (ngaySuDung.HasValue)
+    {
+        var ngay = ngaySuDung.Value.Date;
+        var ngayTiepTheo = ngay.AddDays(1);
+
+        query = query.Where(p =>
+            p.NgayGioDat >= ngay &&
+            p.NgayGioDat < ngayTiepTheo);
+    }
+
+    var danhSach = await query
+        .OrderByDescending(p => p.NgayGioDat)
+        .ToListAsync();
+
+    return new PhieuDatBanViewModel
+    {
+        DanhSachPhieuDatBan = danhSach,
+        TenKhachHang = tenKhachHang,
+        TenBan = tenBan,
+        TrangThai = trangThai,
+        NgaySuDung = ngaySuDung
+    };
+}
         // Lấy chi tiết phiếu đặt bàn
         public async Task<PhieuDatBan?> GetChiTietAsync(int id)
         {
