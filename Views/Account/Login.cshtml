@@ -23,8 +23,6 @@
 
             justify-content: center;
             align-items: center;
-
-            background-color: seagreen;
         }
         .input-box{
             padding: 5px;
@@ -36,6 +34,18 @@
         }
         .message-section{
             color: red;
+        }
+        .success-message{
+            color: green;
+        }
+        .fail-message{
+            color: red;
+        }
+        .login-form{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 <head>
@@ -59,9 +69,23 @@
             <button asp-controller="Account" asp-action="Login">Đăng nhập</button>
             <a asp-controller="Account" asp-action="Register">Đăng Kí</a>
         </div>
-        <span class="message-section">
-            <p>@ViewData["Message"]</p>
-        </span>
+            @{
+                if(ViewBag.SuccessMessage != null)
+                {
+                    <p class="success-message">
+                        Đăng nhập thành công!!!!!
+                    </p>
+                    <script>
+                        window.location.href = '@Url.Action("Index", "TrangChu")'
+                    </script>
+                }
+                if(ViewBag.FailMessage != null)
+                {
+                    <p class="fail-message">
+                        Đăng nhập thất bại: @ViewBag.FailMessage
+                    </p>
+                }
+            }
     </form>
    </div>
 </body>

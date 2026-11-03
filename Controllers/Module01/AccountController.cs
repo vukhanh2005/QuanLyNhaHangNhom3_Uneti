@@ -1,23 +1,22 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using QuanLyNhaHang.DTO;
-using QuanLyNhaHang.Repository;
-using QuanLyNhaHang.Service;
+using QuanLyNhaHang.Service.Interface;
 
 namespace QuanLyNhaHang.Controllers.Module01
 {
     public class AccountController : Controller
     {
-        private readonly LoginService service;
+        private readonly IAuthService service;
 
-        public AccountController(AccountRepository repository)
+        public AccountController(IAuthService service)
         {
-            service = new LoginService(repository);
+            this.service = service;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            return View("Login");
         }
 
         [HttpPost]
@@ -28,7 +27,6 @@ namespace QuanLyNhaHang.Controllers.Module01
             if (response.message != null &&
                 response.message.StartsWith("[SUCCESS]"))
             {
-                // Lưu thông tin tài khoản vào Session
                 HttpContext.Session.SetInt32(
                     "MaTaiKhoan", response.maTaiKhoan);
 
@@ -47,35 +45,46 @@ namespace QuanLyNhaHang.Controllers.Module01
                 return RedirectToAction("Index", "TrangChu");
             }
 
-            ViewData["Message"] =
-                response.message != null &&
-                response.message.Length >= 7
-                    ? response.message.Substring(7)
-                    : "Đăng nhập thất bại.";
-
+            ViewBag.FailMessage = response.message ?? "Đăng nhập thất bại.";
             return View("Login");
         }
 
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            return View("Register");
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(TaiKhoanRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.FailMessage =
+                    "Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại.";
+                return View("Register");
+            }
+
             TaiKhoanResponse response = await service.Register(request);
 
             if (response.message != null &&
                 response.message.StartsWith("[SUCCESS]"))
             {
-                ViewBag.SuccessMessage = response.message.Substring(6);
+                ViewBag.SuccessMessage =
+                    response.message.Substring("[SUCCESS]".Length).Trim();
+
                 return View("Register");
             }
 
-            ViewBag.FailMessage = response.message;
+            ViewBag.FailMessage = response.message ?? "Đăng ký thất bại.";
             return View("Register");
+        }
+
+        [HttpGet]
+        public IActionResult DangXuat()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Account");
         }
 
         [HttpPost]

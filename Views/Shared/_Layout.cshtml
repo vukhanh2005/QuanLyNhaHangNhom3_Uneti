@@ -19,47 +19,69 @@
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container-fluid">
 
                 <a class="navbar-brand"
-                   asp-controller="Home"
+                   asp-controller="TrangChu"
                    asp-action="Index">
-                    QuanLyNhaHang
+                    Quản lý nhà hàng
                 </a>
 
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Mở menu điều hướng">
+                        data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="navbar-collapse collapse" id="navbarContent">
                     <ul class="navbar-nav flex-grow-1">
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-controller="Home"
+                            <a class="nav-link"
+                               asp-controller="TrangChu"
                                asp-action="Index">
-                                Home
+                                Trang chủ
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-controller="Home"
-                               asp-action="Privacy">
-                                Privacy
+                            <a class="nav-link"
+                               asp-controller="BanAn"
+                               asp-action="Index">
+                                Bàn ăn
                             </a>
                         </li>
 
-                        <!-- Module Client: Dat ban -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown">
+                                Quản lý món ăn
+                            </a>
+
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="MonAn"
+                                       asp-action="ThucDon">
+                                        Thực đơn
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="MonAn"
+                                       asp-action="Index">
+                                        Quản lý món ăn
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark"
+                            <a class="nav-link"
                                asp-controller="DatBan"
                                asp-action="Index">
                                 Đặt bàn
@@ -81,8 +103,6 @@
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2026 - QuanLyNhaHang - Nhom 3
-            - Nguyen Vu Khanh - Tran Dac Gia Bao
-            - Vi Thai Hoc - Pham Duc Thanh
         </div>
     </footer>
 

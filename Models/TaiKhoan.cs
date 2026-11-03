@@ -20,21 +20,23 @@ namespace QuanLyNhaHang.Models
         public int MaTaiKhoan { get; set; }
         [Required]
         [StringLength(50)]
-        public string TenDangNhap { get; set; }
+        public string? TenDangNhap { get; set; }
         [Required]
-        [StringLength(50)]
-        public string MatKhau { get; set; }
+        [StringLength(250)]
+        public string? MatKhau { get; set; }
         [Required]
-        [StringLength(50)]
-        public string HoTen { get; set; }
+        [StringLength(250)]
+        public string? HoTen { get; set; }
         [Required]
         [StringLength(50)]
         [EmailAddress]
-        public string Email { get; set; }
-        [StringLength(50)]
+        public string? Email { get; set; }
+
         [Required]
         public VaiTro VaiTro { get; set; }
+
         [Required]
         public bool TrangThai { get; set; }
+        public KhachHang? KhachHang { get; set; }
     }
 }

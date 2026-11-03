@@ -14,9 +14,9 @@ namespace QuanLyNhaHang.Models
         [StringLength(500)]
         public string? MoTa { get; set; }
 
+        [Required]
         public bool TrangThai { get; set; } = true;
 
-        
         public ICollection<BanAn> BanAns { get; set; }
             = new List<BanAn>();
     }

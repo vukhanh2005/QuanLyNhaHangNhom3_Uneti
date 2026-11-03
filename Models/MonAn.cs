@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,7 +24,9 @@ namespace QuanLyNhaHang.Models
         [StringLength(50)]
         public string LoaiMon { get; set; } = string.Empty;
 
-        [Range(0.01, double.MaxValue)]
+        [Precision(18, 2)]
+        [Range(0.01, double.MaxValue,
+            ErrorMessage = "Đơn giá phải lớn hơn 0.")]
         public decimal DonGia { get; set; }
 
         public string? MoTa { get; set; }

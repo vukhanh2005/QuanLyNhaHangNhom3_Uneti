@@ -1,0 +1,16 @@
+@* Họ và tên: Vi Thái Học
+   Mã sinh viên: 23103100054
+   Nội dung thực hiện: Trang tra cứu bàn ăn dành cho khách hàng trong layout của nhóm. *@
+@model QuanLyNhaHang.ViewModels.BanAnIndexViewModel
+@{
+    Layout = "/Views/Shared/ClientLayout.cshtml";
+    ViewData["Title"] = "Tra cứu bàn ăn";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/ban-an-client.css" asp-append-version="true" />
+}
+<section class="ban-an-client" aria-labelledby="ban-an-title">
+    <h1 id="ban-an-title">Tra cứu bàn ăn</h1>
+    <p class="ban-an-intro">Tìm bàn phù hợp theo tên, vị trí, loại bàn, số chỗ ngồi và trạng thái.</p>
+    <partial name="_List" model="Model" />
+</section>

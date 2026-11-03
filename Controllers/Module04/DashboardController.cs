@@ -56,16 +56,16 @@ namespace QuanLyNhaHang.Controllers.Module04
                 .OrderBy(x => x.Nhom)
                 .ToListAsync();
 
-            var model = new DashboardViewModel
-            {
-                TongSoLoaiBan = tongSoLoaiBan,
-                TongSoBan = tongSoBan,
-                TongSoMonAn = tongSoMonAn,
-                SoBanDangSuDung = soBanDangSuDung,
-                SoBanSanSang = soBanSanSang,
-                SoBanTheoLoai = soBanTheoLoai,
-                SoBanTheoTrangThai = soBanTheoTrangThai
-            };
+            var model = new QuanLyNhaHang.ViewModels.Module04.DashboardViewModel
+         {
+             TongSoLoaiBan = tongSoLoaiBan,
+             TongSoBan = tongSoBan,
+             TongSoMonAn = tongSoMonAn,
+             SoBanDangSuDung = soBanDangSuDung,
+             SoBanSanSang = soBanSanSang,
+             SoBanTheoLoai = soBanTheoLoai,
+             SoBanTheoTrangThai = soBanTheoTrangThai
+     };
 
             return View(
                 "~/Views/Module04/Dashboard/Index.cshtml",

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using QuanLyNhaHangNhom3_Uneti.Models;
 
 namespace QuanLyNhaHang.Models
 {
@@ -12,11 +13,14 @@ namespace QuanLyNhaHang.Models
         [StringLength(100)]
         public string TenBan { get; set; } = string.Empty;
 
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn loại bàn.")]
         public int MaLoaiBan { get; set; }
 
+        [ForeignKey(nameof(MaLoaiBan))]
+        public LoaiBan LoaiBan { get; set; } = null!;
+
         [Required]
-        [Range(1, 100, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0")]
         public int SoChoNgoi { get; set; }
 
         [Required(ErrorMessage = "Vị trí không được để trống")]
@@ -27,10 +31,10 @@ namespace QuanLyNhaHang.Models
         public string? MoTa { get; set; }
 
         [Required]
-        public string TrangThai { get; set; } = "Sẵn sàng";
-
-        [ForeignKey(nameof(MaLoaiBan))]
-        public LoaiBan? LoaiBan { get; set; }
+        [StringLength(30)]
+        [RegularExpression(BanAnTrangThai.Pattern,
+            ErrorMessage = "Trạng thái không hợp lệ.")]
+        public string TrangThai { get; set; } = BanAnTrangThai.SanSang;
 
         public ICollection<PhieuDatBan> PhieuDatBans { get; set; }
             = new List<PhieuDatBan>();

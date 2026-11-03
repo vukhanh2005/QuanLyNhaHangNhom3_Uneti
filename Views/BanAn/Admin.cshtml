@@ -1,0 +1,9 @@
+@* Họ và tên: Vi Thái Học
+   Mã sinh viên: 23103100054
+   Nội dung thực hiện: Trang quản lý bàn ăn dành cho Admin trong layout của nhóm. *@
+@model QuanLyNhaHang.ViewModels.BanAnIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý bàn ăn";
+    ViewData["Description"] = "Tra cứu, thêm, sửa, xóa và cập nhật trạng thái bàn ăn.";
+}
+<partial name="_List" model="Model" />

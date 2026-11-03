@@ -15,6 +15,7 @@ namespace QuanLyNhaHang.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
+
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
@@ -22,263 +23,310 @@ namespace QuanLyNhaHang.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("QuanLyNhaHang.Models.BanAn", b =>
+            {
+                b.Property<int>("MaBan")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
+
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaBan"));
+
+                b.Property<int>("MaLoaiBan")
+                    .HasColumnType("int");
+
+                b.Property<string>("MoTa")
+                    .HasMaxLength(500)
+                    .HasColumnType("nvarchar(500)");
+
+                b.Property<int>("SoChoNgoi")
+                    .HasColumnType("int");
+
+                b.Property<string>("TenBan")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
+
+                b.Property<string>("TrangThai")
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnType("nvarchar(30)");
+
+                b.Property<string>("ViTri")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
+
+                b.HasKey("MaBan");
+
+                b.HasIndex("MaLoaiBan");
+
+                b.HasIndex("TenBan")
+                    .IsUnique();
+
+                b.ToTable("BanAns", t =>
                 {
-                    b.Property<int>("MaBan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    t.HasCheckConstraint(
+                        "CK_BanAns_SoChoNgoi",
+                        "[SoChoNgoi] > 0");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaBan"));
-
-                    b.Property<int>("MaLoaiBan")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MoTa")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("SoChoNgoi")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TenBan")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ViTri")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("MaBan");
-
-                    b.HasIndex("MaLoaiBan");
-
-                    b.ToTable("BanAns");
+                    t.HasCheckConstraint(
+                        "CK_BanAns_TrangThai",
+                        "[TrangThai] IN (N'Sẵn sàng', N'Đang sử dụng', N'Tạm ngừng phục vụ')");
                 });
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.KhachHang", b =>
-                {
-                    b.Property<int>("MaKhachHang")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("MaKhachHang")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaKhachHang"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaKhachHang"));
 
-                    b.Property<string>("DiaChi")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                b.Property<string>("DiaChi")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("HoTen")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                b.Property<bool>("GioiTinh")
+                    .HasColumnType("bit");
 
-                    b.Property<string>("SoDienThoai")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("HoTen")
+                    .IsRequired()
+                    .HasMaxLength(250)
+                    .HasColumnType("nvarchar(250)");
 
-                    b.Property<bool>("TrangThai")
-                        .HasColumnType("bit");
+                b.Property<int>("MaTaiKhoan")
+                    .HasColumnType("int");
 
-                    b.HasKey("MaKhachHang");
+                b.Property<DateTime>("NgayDangKy")
+                    .HasColumnType("datetime2");
 
-                    b.ToTable("KhachHangs");
-                });
+                b.Property<DateTime>("NgaySinh")
+                    .HasColumnType("datetime2");
+
+                b.Property<string>("SoDienThoai")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
+
+                b.Property<bool>("TrangThai")
+                    .HasColumnType("bit");
+
+                b.HasKey("MaKhachHang");
+
+                b.HasIndex("MaTaiKhoan")
+                    .IsUnique();
+
+                b.ToTable("KhachHangs");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.LoaiBan", b =>
-                {
-                    b.Property<int>("MaLoaiBan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("MaLoaiBan")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLoaiBan"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLoaiBan"));
 
-                    b.Property<string>("MoTa")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                b.Property<string>("MoTa")
+                    .HasMaxLength(500)
+                    .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("TenLoaiBan")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                b.Property<string>("TenLoaiBan")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("TrangThai")
-                        .HasColumnType("bit");
+                b.Property<bool>("TrangThai")
+                    .HasColumnType("bit");
 
-                    b.HasKey("MaLoaiBan");
+                b.HasKey("MaLoaiBan");
 
-                    b.ToTable("LoaiBans");
-                });
+                b.ToTable("LoaiBans");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.MonAn", b =>
-                {
-                    b.Property<int>("MaMon")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("MaMon")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaMon"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaMon"));
 
-                    b.Property<decimal>("DonGia")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("DonGia")
+                    .HasPrecision(18, 2)
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("HinhAnh")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("HinhAnh")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LoaiMon")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("LoaiMon")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("MoTa")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("MoTa")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TenMon")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("TenMon")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("TrangThai")
-                        .HasColumnType("int");
+                b.Property<int>("TrangThai")
+                    .HasColumnType("int");
 
-                    b.HasKey("MaMon");
+                b.HasKey("MaMon");
 
-                    b.ToTable("MonAns");
-                });
+                b.ToTable("MonAn");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.PhieuDatBan", b =>
-                {
-                    b.Property<int>("MaPhieuDatBan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("MaPhieuDatBan")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieuDatBan"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieuDatBan"));
 
-                    b.Property<string>("GhiChu")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                b.Property<string>("GhiChu")
+                    .HasMaxLength(500)
+                    .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("MaBan")
-                        .HasColumnType("int");
+                b.Property<int>("MaBan")
+                    .HasColumnType("int");
 
-                    b.Property<int>("MaKhachHang")
-                        .HasColumnType("int");
+                b.Property<int>("MaKhachHang")
+                    .HasColumnType("int");
 
-                    b.Property<DateTime>("NgayGioDat")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("NgayGioDat")
+                    .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("NgayTao")
+                    .HasColumnType("datetime2");
 
-                    b.Property<int>("SoNguoi")
-                        .HasColumnType("int");
+                b.Property<int>("SoNguoi")
+                    .HasColumnType("int");
 
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("TrangThai")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("MaPhieuDatBan");
+                b.HasKey("MaPhieuDatBan");
 
-                    b.HasIndex("MaBan");
+                b.HasIndex("MaBan");
 
-                    b.HasIndex("MaKhachHang");
+                b.HasIndex("MaKhachHang");
 
-                    b.ToTable("PhieuDatBans");
-                });
+                b.ToTable("PhieuDatBans");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
-                {
-                    b.Property<int>("MaTaiKhoan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("MaTaiKhoan")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTaiKhoan"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTaiKhoan"));
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("HoTen")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("HoTen")
+                    .IsRequired()
+                    .HasMaxLength(250)
+                    .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("MatKhau")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("MatKhau")
+                    .IsRequired()
+                    .HasMaxLength(250)
+                    .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("TenDangNhap")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("TenDangNhap")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("TrangThai")
-                        .HasColumnType("bit");
+                b.Property<bool>("TrangThai")
+                    .HasColumnType("bit");
 
-                    b.Property<int>("VaiTro")
-                        .HasMaxLength(50)
-                        .HasColumnType("int");
+                b.Property<int>("VaiTro")
+                    .HasColumnType("int");
 
-                    b.HasKey("MaTaiKhoan");
+                b.HasKey("MaTaiKhoan");
 
-                    b.ToTable("TaiKhoans");
-                });
-
-            modelBuilder.Entity("QuanLyNhaHang.Models.BanAn", b =>
-                {
-                    b.HasOne("QuanLyNhaHang.Models.LoaiBan", "LoaiBan")
-                        .WithMany("BanAns")
-                        .HasForeignKey("MaLoaiBan")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LoaiBan");
-                });
-
-            modelBuilder.Entity("QuanLyNhaHang.Models.PhieuDatBan", b =>
-                {
-                    b.HasOne("QuanLyNhaHang.Models.BanAn", "BanAn")
-                        .WithMany("PhieuDatBans")
-                        .HasForeignKey("MaBan")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLyNhaHang.Models.KhachHang", "KhachHang")
-                        .WithMany("PhieuDatBans")
-                        .HasForeignKey("MaKhachHang")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BanAn");
-
-                    b.Navigation("KhachHang");
-                });
+                b.ToTable("TaiKhoans");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.BanAn", b =>
-                {
-                    b.Navigation("PhieuDatBans");
-                });
+            {
+                b.HasOne("QuanLyNhaHang.Models.LoaiBan", "LoaiBan")
+                    .WithMany("BanAns")
+                    .HasForeignKey("MaLoaiBan")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.Navigation("LoaiBan");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.KhachHang", b =>
-                {
-                    b.Navigation("PhieuDatBans");
-                });
+            {
+                b.HasOne("QuanLyNhaHang.Models.TaiKhoan", "TaiKhoan")
+                    .WithOne("KhachHang")
+                    .HasForeignKey("QuanLyNhaHang.Models.KhachHang", "MaTaiKhoan")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("TaiKhoan");
+            });
+
+            modelBuilder.Entity("QuanLyNhaHang.Models.PhieuDatBan", b =>
+            {
+                b.HasOne("QuanLyNhaHang.Models.BanAn", "BanAn")
+                    .WithMany("PhieuDatBans")
+                    .HasForeignKey("MaBan")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("QuanLyNhaHang.Models.KhachHang", "KhachHang")
+                    .WithMany("PhieuDatBans")
+                    .HasForeignKey("MaKhachHang")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("BanAn");
+
+                b.Navigation("KhachHang");
+            });
+
+            modelBuilder.Entity("QuanLyNhaHang.Models.BanAn", b =>
+            {
+                b.Navigation("PhieuDatBans");
+            });
+
+            modelBuilder.Entity("QuanLyNhaHang.Models.KhachHang", b =>
+            {
+                b.Navigation("PhieuDatBans");
+            });
 
             modelBuilder.Entity("QuanLyNhaHang.Models.LoaiBan", b =>
-                {
-                    b.Navigation("BanAns");
-                });
+            {
+                b.Navigation("BanAns");
+            });
+
+            modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
+            {
+                b.Navigation("KhachHang");
+            });
+
 #pragma warning restore 612, 618
         }
     }
