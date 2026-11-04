@@ -10,5 +10,9 @@ public interface IPhieuDatBanService
         CancellationToken cancellationToken = default);
     Task<List<PhieuDatBan>> GetAll(int? maTaiKhoan = null,
         CancellationToken cancellationToken = default);
+    Task<List<PhieuDatBan>> GetLichSu(int maTaiKhoan,
+        CancellationToken cancellationToken = default);
+    Task<PhieuDatBan?> GetChiTietCaNhan(int maPhieu, int maTaiKhoan,
+        CancellationToken cancellationToken = default);
     Task<List<BanAn>> GetBanDangPhucVu(CancellationToken cancellationToken = default);
 }

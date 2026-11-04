@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Filters;
 using QuanLyNhaHang.DTO;
 using QuanLyNhaHang.Filters;
+using QuanLyNhaHang.Models;
 using QuanLyNhaHang.ViewModels;
 
 namespace QuanLyNhaHang.Controllers.Module03;
 
 [AutoValidateAntiforgeryToken]
+[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 public class PhieuDatBanController(IPhieuDatBanService service) : Controller
 {
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -32,9 +34,28 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        // Giữ đường dẫn cũ hoạt động sau khi bỏ trang danh sách phiếu.
-        if (IsCustomer()) return RedirectToAction(nameof(DatBan));
+        if (IsCustomer()) return RedirectToAction(nameof(LichSu));
         return RedirectToAction("Index", "TrangChu");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> LichSu(CancellationToken cancellationToken = default)
+    {
+        if (!IsCustomer()) return StatusCode(StatusCodes.Status403Forbidden);
+        var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan")!.Value;
+        return View(await service.GetLichSu(maTaiKhoan, cancellationToken));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ChiTiet(int id, CancellationToken cancellationToken = default)
+    {
+        if (!IsCustomer()) return StatusCode(StatusCodes.Status403Forbidden);
+        var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan")!.Value;
+        var phieu = ModelState.IsValid && id > 0
+            ? await service.GetChiTietCaNhan(id, maTaiKhoan, cancellationToken) : null;
+        // Phiếu không tồn tại và phiếu của người khác có cùng phản hồi.
+        if (phieu == null) Response.StatusCode = StatusCodes.Status404NotFound;
+        return View("ChiTiet", phieu);
     }
 
     [HttpGet]
@@ -64,7 +85,7 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
             if (result.IsSuccess)
             {
                 TempData["PhieuDatBanSuccess"] = result.Message;
-                return RedirectToAction(nameof(DatBan));
+                return RedirectToAction(nameof(ChiTiet), new { id = result.MaPhieu });
             }
             foreach (var error in result.Errors)
             {
@@ -87,7 +108,7 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
         var result = await service.Huy(id, maTaiKhoan, cancellationToken);
         TempData[result.IsSuccess ? "PhieuDatBanSuccess" : "PhieuDatBanError"] = result.Message;
         if (isAdmin) return RedirectToAction("Index", "TrangChu");
-        return RedirectToAction(nameof(DatBan));
+        return RedirectToAction(nameof(LichSu));
     }
 
     private bool IsCustomer() => HttpContext.Session.GetString("VaiTro") == "User";

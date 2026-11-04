@@ -9,10 +9,11 @@ namespace QuanLyNhaHang.Service.Implement
     public class AuthService : IAuthService
     {
         AccountRepository repository;
-        private readonly KhachHangService khachHangService = new KhachHangService();
-        public AuthService(AccountRepository repository)
+        private readonly IKhachHangService khachHangService;
+        public AuthService(AccountRepository repository, IKhachHangService khachHangService)
         {
             this.repository = repository;
+            this.khachHangService = khachHangService;
         }
 
         public async Task<TaiKhoanResponse> Register(TaiKhoanRequest request)

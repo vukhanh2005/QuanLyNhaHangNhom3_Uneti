@@ -43,6 +43,25 @@ public class PhieuDatBanRepository(AppDbContext context)
             .ToListAsync(cancellationToken);
     }
 
+    // Luồng khách hàng bắt buộc có tài khoản; không dùng mặc định null để đọc toàn bộ phiếu.
+    public Task<List<PhieuDatBan>> GetLichSu(int maTaiKhoan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maTaiKhoan);
+        return GetAll(maTaiKhoan, cancellationToken);
+    }
+
+    public Task<PhieuDatBan?> GetChiTietCaNhan(int maPhieu, int maTaiKhoan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maTaiKhoan);
+        // Kiểm tra chủ sở hữu ngay trong truy vấn, trước khi tải dữ liệu phiếu.
+        return context.PhieuDatBans.AsNoTracking().Include(x => x.BanAn)
+            .Include(x => x.KhachHang)
+            .FirstOrDefaultAsync(x => x.MaPhieu == maPhieu &&
+                x.KhachHang.MaTaiKhoan == maTaiKhoan, cancellationToken);
+    }
+
     public Task<List<BanAn>> GetBanDangPhucVu(CancellationToken cancellationToken = default) =>
         context.BanAns.AsNoTracking().Include(x => x.LoaiBan)
             .Where(x => x.TrangThai == BanAnTrangThai.SanSang || x.TrangThai == BanAnTrangThai.DangSuDung)

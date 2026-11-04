@@ -32,7 +32,7 @@
         <article id="thuc-don" class="feature-card">
             <span class="card-number">01 / THỰC ĐƠN</span><h3>Hôm nay ăn gì?</h3>
             <p>Khám phá món ăn đang phục vụ, thông tin món và giá bán.</p>
-            <div class="availability">Thực đơn đang được chuẩn bị.</div>
+            <a class="button" asp-controller="MonAn" asp-action="ThucDon">Xem thực đơn</a>
         </article>
         <article id="ban-an" class="feature-card feature-card-green">
             <span class="card-number">02 / BÀN ĂN & ĐẶT BÀN</span><h3>Một chỗ ngồi vừa ý</h3>
@@ -49,14 +49,16 @@
 <div class="personal-grid">
     <section id="lich-su" class="personal-panel" aria-labelledby="history-title">
         <p class="eyebrow">NHỮNG CUỘC HẸN ĐÃ QUA</p><h2 id="history-title">Lịch sử đặt bàn</h2>
-        <p class="muted">Chức năng xem lịch sử đặt bàn đang được chuẩn bị.</p>
+        <p class="muted">Theo dõi các phiếu chờ xác nhận, đã xác nhận, đã sử dụng và đã hủy.</p>
+        <a class="text-link" asp-controller="PhieuDatBan" asp-action="LichSu">Xem lịch sử đặt bàn</a>
     </section>
     <section id="tai-khoan" class="personal-panel" aria-labelledby="profile-title">
         <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p><h2 id="profile-title">Thông tin cá nhân</h2>
         @if (Context.Session.GetInt32("MaTaiKhoan") != null)
         {
             <p>Xin chào, <strong>@Context.Session.GetString("HoTen")</strong>.</p>
-            <span class="muted">Chức năng xem và cập nhật hồ sơ đang được chuẩn bị.</span>
+            <p class="muted">Xem và cập nhật thông tin liên hệ cho những lần đặt bàn tiếp theo.</p>
+            <a class="text-link" asp-controller="KhachHang" asp-action="CaNhan">Thông tin cá nhân</a>
         }
         else
         {

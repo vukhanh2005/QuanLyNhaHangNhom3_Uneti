@@ -30,7 +30,7 @@ public class MonAnService(MonAnRepository repository) : IMonAnService
         catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 547 })
         { return new() { Message = "Không thể xóa món đang được dữ liệu khác sử dụng. Bạn có thể ngừng phục vụ món này." }; }
         catch (DbUpdateConcurrencyException)
-        { return new() { Message = "Món ăn đã thay đổi hoặc bị xóa. Vui lòng tải lại trang." }; }
+        { return new() { Message = "Món ăn không còn tồn tại. Vui lòng tải lại trang." }; }
     }
     public async Task<MonAnResponse> CapNhatTrangThai(int id, TrangThaiMonAn trangThai)
     {

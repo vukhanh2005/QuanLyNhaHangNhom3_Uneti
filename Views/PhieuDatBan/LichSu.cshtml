@@ -1,0 +1,93 @@
+@model IReadOnlyList<QuanLyNhaHang.Models.PhieuDatBan>
+@using QuanLyNhaHang.Models
+@{
+    Layout = "/Views/Shared/ClientLayout.cshtml";
+    ViewData["Title"] = "Lịch sử đặt bàn";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer-account.css" asp-append-version="true" />
+    
+}
+
+
+<section class="customer-page" aria-labelledby="history-title">
+    
+    <div class="customer-heading">
+        <div>
+            <p class="eyebrow">NHỮNG CUỘC HẸN CỦA BẠN</p>
+            <h1 id="history-title">Lịch sử đặt bàn</h1>
+            <p class="muted">Theo dõi các yêu cầu đặt bàn và những bữa ăn đã qua.</p>
+        </div>
+        <a class="button" asp-action="DatBan">Đặt bàn mới <span aria-hidden="true">↗</span></a>
+    </div>
+    @if (TempData["PhieuDatBanSuccess"] is string success)
+    {
+        <div class="customer-notice customer-notice-success" role="status">@success</div>
+    }
+    @if (TempData["PhieuDatBanError"] is string error)
+    {
+        <div class="customer-notice customer-notice-error" role="alert">@error</div>
+    }
+    @if (Model.Count == 0)
+    {
+        <div class="customer-panel customer-empty">
+            <h2>Bạn chưa có phiếu đặt bàn</h2>
+            <p class="muted">Chọn một bàn phù hợp và tạo cuộc hẹn đầu tiên của bạn.</p>
+            <a class="button" asp-action="DatBan">Đặt bàn</a>
+        </div>
+    }
+    else
+    {
+        <p class="muted history-count">@Model.Count phiếu đặt bàn · Phiếu mới nhất được hiển thị trước.</p>
+        <div class="booking-history">
+            @foreach (var phieu in Model)
+            {
+                <article class="customer-panel history-card" aria-labelledby="booking-@phieu.MaPhieu">
+                    <div class="history-card-heading">
+                        <div>
+                            <p class="eyebrow">PHIẾU #@phieu.MaPhieu</p>
+                            <h2 id="booking-@phieu.MaPhieu">@phieu.BanAn.TenBan</h2>
+                        </div>
+                        <span
+                        class="customer-status @PhieuDatBanHienThi.LopTrangThai(phieu.TrangThai)">@PhieuDatBanHienThi.TenTrangThai(phieu.TrangThai)</span>
+                    </div>
+                    <dl class="history-grid">
+                        <div>
+                            <dt>Ngày sử dụng</dt>
+                            <dd>@phieu.NgaySuDung.ToString("dd/MM/yyyy")</dd>
+                        </div>
+                        <div>
+                            <dt>Thời gian</dt>
+                            <dd>@phieu.GioBatDau.ToString(@"hh\:mm") – @phieu.GioKetThuc.ToString(@"hh\:mm")</dd>
+                        </div>
+                        <div>
+                            <dt>Số người</dt>
+                            <dd>@phieu.SoNguoi người</dd>
+                        </div>
+                        <div>
+                            <dt>Ngày đặt</dt>
+                            <dd>@phieu.NgayDat.ToString("dd/MM/yyyy HH:mm")</dd>
+                        </div>
+                        <div>
+                            <dt>
+                                @if (phieu.TrangThai == TrangThaiPhieuDatBan.ChoXacNhan)
+                                {
+                                    <form asp-action="Huy" asp-route-id="@phieu.MaPhieu" method="post"
+                                          onsubmit="return confirm('Bạn có chắc muốn hủy phiếu đặt bàn này?');">
+                                        <button class="button-cancel button button-cancel:hover" type="submit">Hủy đặt bàn</button>
+                                    </form>
+                                }
+                            </dt>
+                        </div>
+                    </dl>
+                    <div class="customer-actions">
+                        <a class="text-link" asp-action="ChiTiet" asp-route-id="@phieu.MaPhieu"
+                           aria-label="Xem chi tiết phiếu @phieu.MaPhieu">Xem chi tiết <span aria-hidden="true">→</span></a>
+                        
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>
+

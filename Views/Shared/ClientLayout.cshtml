@@ -1,6 +1,7 @@
 @using Microsoft.AspNetCore.Http
 @{
     var signedIn = Context.Session.GetInt32("MaTaiKhoan") != null;
+    var isCustomer = Context.Session.GetString("VaiTro") == "User";
     var customerName = Context.Session.GetString("HoTen") ?? "Khách hàng";
 }
 <!DOCTYPE html>
@@ -29,12 +30,23 @@
                     <a asp-controller="MonAn" asp-action="ThucDon">Thực đơn</a>
                     <a asp-controller="BanAn" asp-action="Index">Bàn ăn</a>
                     <a asp-controller="PhieuDatBan" asp-action="DatBan">Đặt bàn</a>
+                    @if (!signedIn || isCustomer)
+                    {
+                        <a asp-controller="PhieuDatBan" asp-action="LichSu">Lịch sử đặt bàn</a>
+                    }
                 </nav>
             </details>
             <div class="account-links">
                 @if (signedIn)
                 {
-                    <a class="account-name" asp-controller="TrangChu" asp-action="Index" asp-fragment="tai-khoan" title="@customerName">@customerName</a>
+                    @if (isCustomer)
+                    {
+                        <a class="account-name" asp-controller="KhachHang" asp-action="CaNhan" title="Thông tin cá nhân của @customerName">@customerName</a>
+                    }
+                    else
+                    {
+                        <a class="account-name" asp-controller="TrangChu" asp-action="Index" title="@customerName">@customerName</a>
+                    }
                     <a class="text-link" asp-controller="Account" asp-action="DangXuat">Đăng xuất</a>
                 }
                 else

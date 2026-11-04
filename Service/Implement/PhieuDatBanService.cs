@@ -85,6 +85,13 @@ public class PhieuDatBanService(PhieuDatBanRepository repository, TimeProvider c
     public Task<List<PhieuDatBan>> GetAll(int? maTaiKhoan = null,
         CancellationToken cancellationToken = default) => repository.GetAll(maTaiKhoan, cancellationToken);
 
+    public Task<List<PhieuDatBan>> GetLichSu(int maTaiKhoan,
+        CancellationToken cancellationToken = default) => repository.GetLichSu(maTaiKhoan, cancellationToken);
+
+    public Task<PhieuDatBan?> GetChiTietCaNhan(int maPhieu, int maTaiKhoan,
+        CancellationToken cancellationToken = default) =>
+        repository.GetChiTietCaNhan(maPhieu, maTaiKhoan, cancellationToken);
+
     public Task<List<BanAn>> GetBanDangPhucVu(CancellationToken cancellationToken = default) =>
         repository.GetBanDangPhucVu(cancellationToken);
 
