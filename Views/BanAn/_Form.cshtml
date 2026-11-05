@@ -2,6 +2,11 @@
    Mã sinh viên: 23103100054
    Nội dung thực hiện: Form dùng chung cho thêm, sửa bàn ăn với select, textarea và validation. *@
 @model QuanLyNhaHang.ViewModels.BanAnFormViewModel
+@* Giữ phiên bản lúc mở form. Không tự thay bằng phiên bản mới khi có xung đột. *@
+@if (Model.MaBan.HasValue) {
+    <input asp-for="RowVersion" type="hidden" />
+    <p><a asp-action="Edit" asp-route-id="@Model.MaBan">Tải lại dữ liệu mới nhất</a> (các thay đổi chưa lưu sẽ bị bỏ).</p>
+}
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 @if (!Model.LoaiBanOptions.Any()) {
     <p class="alert alert-warning">Chưa có loại bàn. Vui lòng thêm loại bàn trong Module 1 trước.</p>

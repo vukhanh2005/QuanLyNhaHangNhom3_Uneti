@@ -12,6 +12,8 @@ public class BanAnFormViewModel
 {
     [ValidateNever]
     public int? MaBan { get; set; }
+    // Phiên bản khi mở form Edit, mã hóa Base64 để gửi qua hidden input.
+    public string? RowVersion { get; set; }
     [Required(ErrorMessage = "Tên bàn không được để trống.")]
     [StringLength(100, ErrorMessage = "Tên bàn tối đa 100 ký tự.")]
     [Display(Name = "Tên bàn")]
@@ -21,6 +23,7 @@ public class BanAnFormViewModel
     [Display(Name = "Loại bàn")]
     public int MaLoaiBan { get; set; }
 
+    // Hiện chỉ yêu cầu số chỗ dương, chưa giới hạn sức chứa thực tế như 20 chỗ.
     [Range(1, int.MaxValue, ErrorMessage = "Số chỗ ngồi phải lớn hơn 0.")]
     [Display(Name = "Số chỗ ngồi")]
     public int SoChoNgoi { get; set; } = 4;
@@ -40,8 +43,10 @@ public class BanAnFormViewModel
     public string TrangThai { get; set; } = BanAnTrangThai.SanSang;
 
     [ValidateNever]
+    // Dữ liệu hiển thị do server nạp lại, không phải thông tin cần lưu từ form.
     public IEnumerable<SelectListItem> LoaiBanOptions { get; set; } = [];
     public IEnumerable<SelectListItem> TrangThaiOptions =>
         BanAnTrangThai.TatCa.Select(x => new SelectListItem(x, x));
+
 }
 

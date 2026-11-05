@@ -8,16 +8,20 @@ namespace QuanLyNhaHang.ViewModels;
 
 public class BanAnIndexViewModel
 {
+    // Chỉ chứa các bàn của trang hiện tại, không phải toàn bộ bảng.
     public List<BanAn> BanAns { get; set; } = [];
     public List<int> SoChoOptions { get; set; } = [];
     public string? Keyword { get; set; }
+    // Giá trị null nghĩa là người dùng chưa chọn bộ lọc này.
     public int? MaLoaiBan { get; set; }
     public int? SoChoNgoi { get; set; }
     public string? TrangThai { get; set; }
     public string SortOrder { get; set; } = "name_asc";
     public int CurrentPage { get; set; } = 1;
     public int TotalCount { get; set; }
+    // Đổi 5 thành 10 tại đây nếu muốn hiển thị 10 bàn trên mỗi trang.
     public int PageSize { get; } = 5;
+    // Làm tròn lên: 12 bàn / 5 = 3 trang. Không có kết quả vẫn quy ước trang 1/1.
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
     public IEnumerable<SelectListItem> LoaiBanOptions { get; set; } = [];
     public IEnumerable<SelectListItem> TrangThaiOptions =>

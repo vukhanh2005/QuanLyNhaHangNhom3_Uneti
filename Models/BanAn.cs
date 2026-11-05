@@ -12,6 +12,10 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
         [Key]
         public int MaBan { get; set; }
 
+        // SQL Server tự đổi phiên bản sau mỗi lần cập nhật; EF dùng để phát hiện sửa đồng thời.
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+
         [Required(ErrorMessage = "Tên bàn không được để trống")]
         [StringLength(100)]
         public string TenBan { get; set; } = string.Empty;

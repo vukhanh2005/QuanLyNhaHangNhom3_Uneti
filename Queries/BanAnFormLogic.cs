@@ -10,6 +10,7 @@ namespace QuanLyNhaHang.Queries;
 
 public static class BanAnFormLogic
 {
+    // Trim bỏ khoảng trắng đầu/cuối; mô tả không nhập được lưu dưới dạng null.
     public static void Normalize(BanAnFormViewModel model)
     {
         model.TenBan = model.TenBan?.Trim() ?? "";
@@ -38,6 +39,7 @@ public static class BanAnFormLogic
             cacBanCungTen = cacBanCungTen.Where(x => x.MaBan != currentId.Value);
         }
 
+        // AnyAsync chỉ kiểm tra tồn tại, không tải tất cả bàn cùng tên về bộ nhớ.
         bool trungTen = await cacBanCungTen.AnyAsync(cancellationToken);
         if (trungTen)
         {
@@ -57,11 +59,13 @@ public static class BanAnFormLogic
         entity.TrangThai = model.TrangThai;
     }
 
+    // Chuyển dữ liệu database thành dữ liệu hiển thị trên form Edit.
     public static BanAnFormViewModel FromEntity(BanAn entity)
     {
         return new BanAnFormViewModel
         {
             MaBan = entity.MaBan,
+            RowVersion = Convert.ToBase64String(entity.RowVersion),
             TenBan = entity.TenBan,
             MaLoaiBan = entity.MaLoaiBan,
             SoChoNgoi = entity.SoChoNgoi,
