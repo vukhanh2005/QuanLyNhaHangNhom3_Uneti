@@ -130,6 +130,7 @@ static class Module2SqlChecks
             {
                 var controller = Controller(db);
                 var form = Form("New table", type); form.MaBan = 99999;
+                form.RowVersion = Convert.ToBase64String((await db.BanAns.AsNoTracking().SingleAsync(x => x.MaBan == id)).RowVersion);
                 Check(await controller.Edit(id, form, default) is RedirectToActionResult
                     && await db.BanAns.AnyAsync(x => x.MaBan == id && x.TenBan == "New table"), "Edit excludes self and preserves key");
             }
@@ -139,6 +140,57 @@ static class Module2SqlChecks
                 Check(await controller.Edit(id, Form("Test 01",type), default) is ViewResult
                     && controller.ModelState.ContainsKey("TenBan"), "Duplicate edit blocked");
                 Check(await controller.Details(int.MaxValue, default) is NotFoundResult, "Missing details returns 404");
+            }
+            // Hai Admin mở cùng phiên bản; Admin thứ hai không được ghi đè lần lưu đầu.
+            BanAnFormViewModel firstForm;
+            BanAnFormViewModel secondForm;
+            await using (var read = Db())
+            {
+                var table = await read.BanAns.AsNoTracking().SingleAsync(x => x.MaBan == id);
+                firstForm = QuanLyNhaHang.Queries.BanAnFormLogic.FromEntity(table);
+                secondForm = QuanLyNhaHang.Queries.BanAnFormLogic.FromEntity(table);
+            }
+            firstForm.MoTa = "Saved by first admin";
+            secondForm.MoTa = "Attempted overwrite";
+            await using (var first = Db())
+                Check(await Controller(first).Edit(id, firstForm, default) is RedirectToActionResult, "First admin saves");
+            await using (var second = Db())
+            {
+                var controller = Controller(second);
+                Check(await controller.Edit(id, secondForm, default) is ViewResult && !controller.ModelState.IsValid,
+                    "Second admin stale form rejected");
+                Check(await second.BanAns.AsNoTracking().AnyAsync(x => x.MaBan == id && x.MoTa == "Saved by first admin"),
+                    "First admin data preserved");
+                Check(secondForm.RowVersion == firstForm.RowVersion, "Conflict does not silently refresh token");
+            }
+            foreach (var token in new string?[] { null, "invalid!", Convert.ToBase64String(new byte[2]) })
+            {
+                await using var db = Db();
+                var controller = Controller(db);
+                var form = QuanLyNhaHang.Queries.BanAnFormLogic.FromEntity(await db.BanAns.AsNoTracking().SingleAsync(x => x.MaBan == id));
+                form.RowVersion = token;
+                Check(await controller.Edit(id, form, default) is ViewResult && !controller.ModelState.IsValid,
+                    "Missing or malformed token rejected");
+            }
+            // Kiểm tra hàng rào SQL: hai DbContext đã đọc trước khi bên thứ nhất lưu.
+            await using (var first = Db())
+            await using (var second = Db())
+            {
+                var a = await first.BanAns.SingleAsync(x => x.MaBan == id);
+                var b = await second.BanAns.SingleAsync(x => x.MaBan == id);
+                a.MoTa = "Database winner";
+                await first.SaveChangesAsync();
+                b.MoTa = "Database loser";
+                bool blocked = false;
+                try { await second.SaveChangesAsync(); }
+                catch (DbUpdateConcurrencyException) { blocked = true; }
+                Check(blocked, "SQL rowversion blocks concurrent update");
+            }
+            await using (var reload = Db())
+            {
+                var form = QuanLyNhaHang.Queries.BanAnFormLogic.FromEntity(await reload.BanAns.AsNoTracking().SingleAsync(x => x.MaBan == id));
+                form.MoTa = "Reviewed latest data";
+                Check(await Controller(reload).Edit(id, form, default) is RedirectToActionResult, "Reloaded form can save");
             }
             await using (var db = Db())
             {
@@ -305,11 +357,22 @@ static class Module2SqlChecks
                 && await setup.BanAns.AnyAsync(x => x.TenBan == "HTTP table"), "HTTP valid create saves to SQL Server");
             var id = await setup.BanAns.Where(x => x.TenBan == "HTTP table").Select(x => x.MaBan).SingleAsync();
             var editHtml = await client.GetStringAsync("/BanAn/Edit/" + id);
+            var versionMatch = System.Text.RegularExpressions.Regex.Match(editHtml, "name=\"RowVersion\"[^>]*value=\"([^\"]+)\"");
+            check(versionMatch.Success, "HTTP rowversion hidden field rendered");
+            fields["RowVersion"] = System.Net.WebUtility.HtmlDecode(versionMatch.Groups[1].Value);
             check(editHtml.Contains("HTTP table"), "HTTP Edit loads saved values");
             fields["TenBan"] = "HTTP updated";
             fields["MaBan"] = "99999";
             check((int)(await client.PostAsync("/BanAn/Edit/" + id, new FormUrlEncodedContent(fields))).StatusCode == 302
                 && await setup.BanAns.AnyAsync(x => x.MaBan == id && x.TenBan == "HTTP updated"), "HTTP Edit ignores posted primary key");
+            fields["TenBan"] = "HTTP stale overwrite";
+            var staleResponse = await client.PostAsync("/BanAn/Edit/" + id, new FormUrlEncodedContent(fields));
+            var staleHtml = System.Net.WebUtility.HtmlDecode(await staleResponse.Content.ReadAsStringAsync());
+            check(staleResponse.IsSuccessStatusCode && staleHtml.Contains("Admin khác cập nhật")
+                && await setup.BanAns.AnyAsync(x => x.MaBan == id && x.TenBan == "HTTP updated"),
+                "HTTP stale form cannot overwrite saved data");
+            check(staleHtml.Contains("HTTP stale overwrite") && staleHtml.Contains("Tải lại dữ liệu mới nhất"),
+                "HTTP conflict retains input and offers reload");
             var details = await client.GetAsync("/BanAn/Details/" + id);
             check(details.IsSuccessStatusCode, "HTTP Details renders");
             var delete = await client.GetAsync("/BanAn/Delete/" + id);

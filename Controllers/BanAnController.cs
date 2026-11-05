@@ -12,11 +12,13 @@ using QuanLyNhaHangNhom3_Uneti.Models;
 
 namespace QuanLyNhaHang.Controllers;
 
+// Kiểm tra đăng nhập trước mọi action, kể cả khi người dùng tự nhập URL.
 [Module2Session]
 public class BanAnController : Controller
 {
     private readonly AppDbContext context;
 
+    // ASP.NET Core cung cấp DbContext qua constructor để truy cập database.
     public BanAnController(AppDbContext context)
     {
         this.context = context;
@@ -61,6 +63,7 @@ public class BanAnController : Controller
         return View("Client", model);
     }
 
+    // Xem chi tiết theo mã; không tìm thấy bàn thì trả HTTP 404.
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(id, cancellationToken);
@@ -72,6 +75,7 @@ public class BanAnController : Controller
     }
 
     [Module2Admin]
+    // GET: mở form trống và lấy danh sách loại bàn, chưa lưu dữ liệu.
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         var model = new BanAnFormViewModel();
@@ -80,17 +84,22 @@ public class BanAnController : Controller
     }
 
     [HttpPost, Module2Admin, ValidateAntiForgeryToken]
+    // POST: nhận form; quyền Admin và token chống giả mạo được kiểm tra trước action.
     public async Task<IActionResult> Create(BanAnFormViewModel model, CancellationToken cancellationToken)
     {
+        // Mã bàn mới do database sinh, không lấy từ form.
         model.MaBan = null;
         await ValidateFormAsync(model, null, cancellationToken);
+        // Chỉ lưu khi không có lỗi từ validation của ViewModel và kiểm tra nghiệp vụ.
         if (ModelState.IsValid)
         {
             var entity = new BanAn();
             BanAnFormLogic.ApplyTo(model, entity);
+            // Add đánh dấu thêm mới; SaveAsync mới thực sự ghi vào database.
             context.BanAns.Add(entity);
             if (await SaveAsync(cancellationToken))
             {
+                // TempData giữ thông báo qua redirect; redirect tránh gửi lại POST khi tải lại trang.
                 TempData["BanAnSuccess"] = "Đã thêm bàn ăn.";
                 return RedirectToAction(nameof(Index));
             }
@@ -100,6 +109,7 @@ public class BanAnController : Controller
     }
 
     [Module2Admin]
+    // GET: lấy thông tin bàn hiện tại để điền vào form sửa.
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(id, cancellationToken);
@@ -110,16 +120,41 @@ public class BanAnController : Controller
     }
 
     [HttpPost, Module2Admin, ValidateAntiForgeryToken]
+    // POST: lấy mã bàn từ URL và chỉ cập nhật các trường được phép sửa.
     public async Task<IActionResult> Edit([FromRoute] int id, BanAnFormViewModel model,
         CancellationToken cancellationToken)
     {
+        // EF theo dõi entity này để SaveChangesAsync nhận biết các trường đã thay đổi.
         var entity = await context.BanAns.FirstOrDefaultAsync(x => x.MaBan == id, cancellationToken);
         if (entity is null) return NotFound();
         model.MaBan = id; // Không tin mã bàn do form gửi lên.
+        // Phải so với phiên bản lúc Admin mở form, không dùng phiên bản vừa đọc ở POST.
+        byte[] phienBanCu;
+        try
+        {
+            phienBanCu = Convert.FromBase64String(model.RowVersion ?? "");
+        }
+        catch (FormatException)
+        {
+            phienBanCu = Array.Empty<byte>();
+        }
+        if (phienBanCu.Length != 8)
+        {
+            ModelState.AddModelError("", "Thiếu hoặc sai phiên bản dữ liệu. Vui lòng tải lại dữ liệu mới nhất.");
+        }
+        else if (!entity.RowVersion.SequenceEqual(phienBanCu))
+        {
+            ModelState.AddModelError("", "Bàn đã được Admin khác cập nhật. Thay đổi của bạn chưa được lưu. Hãy tải lại dữ liệu mới nhất và kiểm tra trước khi sửa tiếp.");
+        }
         await ValidateFormAsync(model, id, cancellationToken);
+        // Chỉ lưu khi không có lỗi từ validation của ViewModel và kiểm tra nghiệp vụ.
         if (ModelState.IsValid)
         {
             BanAnFormLogic.ApplyTo(model, entity);
+            // UPDATE chỉ thành công khi RowVersion vẫn trùng, kể cả có người lưu trong lúc POST xử lý.
+            context.Entry(entity).Property(x => x.RowVersion).OriginalValue = phienBanCu;
+            // Luôn kiểm tra phiên bản khi bấm Lưu, kể cả dữ liệu nhập không đổi.
+            context.Entry(entity).Property(x => x.TenBan).IsModified = true;
             if (await SaveAsync(cancellationToken))
             {
                 TempData["BanAnSuccess"] = "Đã cập nhật bàn ăn.";
@@ -131,6 +166,7 @@ public class BanAnController : Controller
     }
 
     [Module2Admin]
+    // GET: chỉ hiện xác nhận, tuyệt đối chưa xóa bàn.
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(id, cancellationToken);
@@ -142,6 +178,7 @@ public class BanAnController : Controller
     }
 
     [HttpPost, ActionName("Delete"), Module2Admin, ValidateAntiForgeryToken]
+    // POST: chỉ xóa sau xác nhận; ActionName giữ URL /BanAn/Delete.
     public async Task<IActionResult> DeleteConfirmed([FromRoute] int id, CancellationToken cancellationToken)
     {
         var entity = await context.BanAns.Include(x => x.LoaiBan)
@@ -158,6 +195,7 @@ public class BanAnController : Controller
             ModelState.AddModelError("", "Không thể xóa bàn đang sử dụng.");
             return View("Delete", entity);
         }
+        // Remove đánh dấu xóa; chỉ sau SaveChangesAsync thành công dữ liệu mới bị xóa.
         context.BanAns.Remove(entity);
         try
         {
@@ -183,6 +221,7 @@ public class BanAnController : Controller
             .FirstOrDefaultAsync(x => x.MaBan == id, cancellationToken);
     }
 
+    // Dropdown hiển thị tên loại bàn, nhưng giá trị gửi về là mã loại bàn.
     private async Task<List<SelectListItem>> LoaiBanOptionsAsync(CancellationToken cancellationToken)
     {
         return await context.LoaiBans.AsNoTracking().OrderBy(x => x.TenLoaiBan)
@@ -190,6 +229,7 @@ public class BanAnController : Controller
             .ToListAsync(cancellationToken);
     }
 
+    // Không chỉ tin dropdown: người dùng có thể tự gửi một mã loại bàn không tồn tại.
     private async Task ValidateFormAsync(BanAnFormViewModel model, int? currentId,
         CancellationToken cancellationToken)
     {
@@ -198,6 +238,8 @@ public class BanAnController : Controller
             ModelState.AddModelError(nameof(model.MaLoaiBan), "Vui lòng chọn loại bàn tồn tại.");
     }
 
+    // Xử lý lỗi lưu chung cho thêm/sửa. SQL 2601/2627: trùng khóa; 547: vi phạm ràng buộc.
+    // Unique index vẫn bảo vệ tên bàn nếu hai yêu cầu thêm trùng chạy đồng thời.
     private async Task<bool> SaveAsync(CancellationToken cancellationToken)
     {
         try

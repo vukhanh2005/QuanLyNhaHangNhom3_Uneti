@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace QuanLyNhaHang.Filters;
 
-// Hợp đồng tích hợp: MaTaiKhoan = SetInt32; VaiTro = SetString("Admin").
-// Không đọc quyền từ form/query string và không cung cấp đăng nhập giả.
+
 public sealed class Module2AdminAttribute : Attribute, IAuthorizationFilter
 {
     public static bool IsAdmin(ISession session)
@@ -17,6 +16,7 @@ public sealed class Module2AdminAttribute : Attribute, IAuthorizationFilter
         return maTaiKhoan.HasValue && maTaiKhoan.Value > 0 && vaiTro == "Admin";
     }
 
+    // Ẩn nút ở View chưa đủ: filter chặn cả URL trực tiếp và POST của người không có quyền.
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         if (!IsAdmin(context.HttpContext.Session))
