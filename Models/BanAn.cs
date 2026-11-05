@@ -38,6 +38,6 @@ namespace QuanLyNhaHangNhom3_Uneti.Models
         public string TrangThai { get; set; } = BanAnTrangThai.SanSang;
 
       
-        // public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
+        public ICollection<PhieuDatBan> PhieuDatBans { get; set; } = new List<PhieuDatBan>();
     }
 }

@@ -1,0 +1,101 @@
+@model QuanLyNhaHang.ViewModels.KhachHangCaNhanViewModel
+@{
+    Layout = "/Views/Shared/ClientLayout.cshtml";
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer-account.css" asp-append-version="true" />
+}
+<section class="customer-page" aria-labelledby="profile-title">
+    <div class="customer-heading">
+        <div>
+            <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p>
+            <h1 id="profile-title">Thông tin cá nhân</h1>
+            <p class="muted">Cập nhật thông tin liên hệ để nhà hàng chuẩn bị chu đáo cho cuộc hẹn của bạn.</p>
+        </div>
+        <a class="text-link" asp-controller="PhieuDatBan" asp-action="LichSu">Lịch sử đặt bàn →</a>
+    </div>
+    @if (TempData["KhachHangSuccess"] is string success)
+    {
+        <div class="customer-notice customer-notice-success" role="status">@success</div>
+    }
+    @if (Model.ThongTin == null)
+    {
+        <div class="customer-panel">
+            <h2>Chưa có hồ sơ khách hàng</h2>
+            <p class="customer-notice" role="status">@Model.ThongBao</p>
+            <a class="text-link" asp-controller="TrangChu" asp-action="Index">← Về trang chủ</a>
+        </div>
+    }
+    else
+    {
+        <div class="profile-summary customer-panel">
+            <div>
+                <h2>@Model.ThongTin.HoTen</h2>
+                <p class="muted">Thông tin đăng ký của bạn</p>
+            </div>
+            <dl class="profile-meta">
+                <div>
+                    <dt>Ngày đăng ký</dt>
+                    <dd>@Model.ThongTin.NgayDangKy.ToString("dd/MM/yyyy HH:mm")</dd>
+                </div>
+                <div>
+                    <dt>Trạng thái hồ sơ</dt>
+                    <dd><span class="customer-status @(Model.ThongTin.TrangThai ? "status-active" : "status-inactive")">@(Model.ThongTin.TrangThai ? "Hoạt động" : "Ngừng hoạt động")</span></dd>
+                </div>
+            </dl>
+        </div>
+        @if (!Model.ThongTin.TrangThai)
+        {
+            <p class="customer-notice" role="status">Hồ sơ đang ngừng hoạt động. Bạn vẫn có thể cập nhật thông tin cá nhân; vui lòng liên hệ nhà hàng nếu cần đặt bàn.</p>
+        }
+        <form asp-controller="KhachHang" asp-action="CapNhatCaNhan" method="post" class="customer-form customer-panel">
+            <h2>Chỉnh sửa thông tin</h2>
+            <p class="muted">Các trường có dấu * là bắt buộc.</p>
+            <div asp-validation-summary="All" class="customer-validation" role="alert"></div>
+            <div class="customer-grid">
+                <div class="customer-field">
+                    <label asp-for="Request.HoTen">Họ tên <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.HoTen" autocomplete="name" maxlength="250" aria-describedby="profile-name-error" />
+                    <span asp-validation-for="Request.HoTen" id="profile-name-error" class="customer-field-error"></span>
+                </div>
+                <div class="customer-field">
+                    <label asp-for="Request.NgaySinh">Ngày sinh <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.NgaySinh" type="date" asp-format="{0:yyyy-MM-dd}" min="0001-01-02" max="@Model.NgaySinhToiDa" autocomplete="bday" aria-describedby="profile-birth-error" />
+                    <span asp-validation-for="Request.NgaySinh" id="profile-birth-error" class="customer-field-error"></span>
+                </div>
+                <div class="customer-field">
+                    <label asp-for="Request.GioiTinh">Giới tính <span aria-hidden="true">*</span></label>
+                    <select asp-for="Request.GioiTinh" aria-describedby="profile-gender-error">
+                        <option value="">Chọn giới tính</option>
+                        <option value="true">Nam</option>
+                        <option value="false">Nữ</option>
+                    </select>
+                    <span asp-validation-for="Request.GioiTinh" id="profile-gender-error" class="customer-field-error"></span>
+                </div>
+                <div class="customer-field">
+                    <label asp-for="Request.SoDienThoai">Số điện thoại <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.SoDienThoai" type="tel" autocomplete="tel" aria-describedby="profile-phone-error" />
+                    <span asp-validation-for="Request.SoDienThoai" id="profile-phone-error" class="customer-field-error"></span>
+                </div>
+                <div class="customer-field">
+                    <label asp-for="Request.Email">Email <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.Email" type="email" autocomplete="email" maxlength="50" aria-describedby="profile-email-error" />
+                    <span asp-validation-for="Request.Email" id="profile-email-error" class="customer-field-error"></span>
+                </div>
+                <div class="customer-field">
+                    <label asp-for="Request.DiaChi">Địa chỉ <span aria-hidden="true">*</span></label>
+                    <textarea asp-for="Request.DiaChi" rows="3" autocomplete="street-address" aria-describedby="profile-address-error"></textarea>
+                    <span asp-validation-for="Request.DiaChi" id="profile-address-error" class="customer-field-error"></span>
+                </div>
+            </div>
+            <div class="customer-actions">
+                <button class="button" type="submit">Lưu thông tin</button>
+                <a class="text-link" asp-action="CaNhan">Tải lại thông tin đã lưu</a>
+            </div>
+        </form>
+    }
+</section>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

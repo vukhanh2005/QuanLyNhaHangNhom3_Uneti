@@ -1,0 +1,81 @@
+@model QuanLyNhaHang.ViewModels.PhieuDatBanFormViewModel
+@{
+    Layout = "/Views/Shared/ClientLayout.cshtml";
+    ViewData["Title"] = "Đăng ký đặt bàn";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/phieu-dat-ban.css" asp-append-version="true" />
+}
+<section class="booking-page" aria-labelledby="booking-title">
+    <div class="booking-heading">
+        <div><p class="eyebrow">HẸN NHAU BÊN BÀN ĂN</p><h1 id="booking-title">Đăng ký đặt bàn</h1></div>
+        <a class="booking-link" asp-controller="BanAn" asp-action="Index">← Xem các bàn ăn</a>
+    </div>
+    <p class="booking-intro">Chọn bàn và khoảng thời gian cho cuộc hẹn của bạn. Phiếu gửi thành công sẽ ở trạng thái chờ xác nhận.</p>
+    @if (TempData["PhieuDatBanSuccess"] is string success)
+    {
+        <div class="booking-notice booking-notice-success" role="status">@success</div>
+    }
+    @if (TempData["PhieuDatBanError"] is string error)
+    {
+        <div class="booking-notice booking-notice-error" role="alert">@error</div>
+    }
+    <div class="booking-columns">
+        <form asp-action="DatBan" method="post" class="booking-form">
+            <div asp-validation-summary="All" class="booking-validation" role="alert"></div>
+            @if (!Model.CoBanDangPhucVu)
+            {
+                <div class="booking-notice" role="status">Hiện chưa có bàn đang phục vụ. Bạn có thể quay lại danh sách bàn hoặc kiểm tra sau.</div>
+            }
+            <div class="booking-field">
+                <label asp-for="Request.MaBan">Bàn ăn <span aria-hidden="true">*</span></label>
+                <select asp-for="Request.MaBan" asp-items="Model.BanOptions" aria-describedby="table-help">
+                    <option value="">Chọn bàn ăn</option>
+                </select>
+                <small id="table-help">Tên bàn, số chỗ ngồi và vị trí giúp bạn chọn bàn phù hợp.</small>
+                <span asp-validation-for="Request.MaBan" class="booking-field-error"></span>
+            </div>
+            <div class="booking-form-grid">
+                <div class="booking-field">
+                    <label asp-for="Request.NgaySuDung">Ngày sử dụng <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.NgaySuDung" type="date" asp-format="{0:yyyy-MM-dd}" min="@Model.NgayToiThieu" />
+                    <span asp-validation-for="Request.NgaySuDung" class="booking-field-error"></span>
+                </div>
+                <div class="booking-field">
+                    <label asp-for="Request.SoNguoi">Số người <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.SoNguoi" type="number" min="1" step="1" inputmode="numeric" />
+                    <span asp-validation-for="Request.SoNguoi" class="booking-field-error"></span>
+                </div>
+                <div class="booking-field">
+                    <label asp-for="Request.GioBatDau">Giờ bắt đầu <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.GioBatDau" type="time" asp-format="{0:hh\:mm}" step="60" />
+                    <span asp-validation-for="Request.GioBatDau" class="booking-field-error"></span>
+                </div>
+                <div class="booking-field">
+                    <label asp-for="Request.GioKetThuc">Giờ kết thúc <span aria-hidden="true">*</span></label>
+                    <input asp-for="Request.GioKetThuc" type="time" asp-format="{0:hh\:mm}" step="60" />
+                    <span asp-validation-for="Request.GioKetThuc" class="booking-field-error"></span>
+                </div>
+            </div>
+            <div class="booking-field">
+                <label asp-for="Request.GhiChu">Ghi chú <small>(không bắt buộc)</small></label>
+                <textarea asp-for="Request.GhiChu" rows="4" maxlength="500" placeholder="Chia sẻ thêm mong muốn cho cuộc hẹn của bạn…"></textarea>
+                <span asp-validation-for="Request.GhiChu" class="booking-field-error"></span>
+            </div>
+            <div class="booking-actions">
+                <button type="submit" class="booking-button" disabled="@(!Model.CoBanDangPhucVu)">Gửi yêu cầu đặt bàn</button>
+                <a class="booking-link" asp-action="LichSu">Lịch sử đặt bàn</a>
+            </div>
+        </form>
+        <aside class="booking-aside" aria-labelledby="booking-note-title">
+            <span class="booking-aside-number" aria-hidden="true">01 — 02 — 03</span>
+            <h2 id="booking-note-title">Một cuộc hẹn trọn vẹn</h2>
+            <p>Chọn ngày từ hôm nay, giờ kết thúc sau giờ bắt đầu và số người phù hợp với sức chứa của bàn.</p>
+            <p>Lịch đặt được kiểm tra khi gửi yêu cầu. Nếu trùng lịch, bạn sẽ nhận được thông báo để chọn thời gian hoặc bàn khác.</p>
+            <p class="booking-aside-footnote">Giờ đặt bàn được tính theo giờ Việt Nam.</p>
+        </aside>
+    </div>
+</section>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

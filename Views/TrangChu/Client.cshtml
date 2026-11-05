@@ -24,7 +24,7 @@
 <section id="huong-dan" class="booking-guide" aria-label="Hướng dẫn đặt bàn">
     <div><span class="step">01</span><div><h2>Chọn bàn phù hợp</h2><p>Tra cứu vị trí, loại bàn và số chỗ ngồi.</p></div></div>
     <div><span class="step">02</span><div><h2>Hẹn ngày, chọn giờ</h2><p>Chọn thời gian, số người và ghi chú.</p></div></div>
-    <div><span class="step">03</span><div><h2>Theo dõi xác nhận</h2><p>Kiểm tra trạng thái trong phiếu đặt bàn.</p></div></div>
+    <div><span class="step">03</span><div><h2>Gửi yêu cầu đặt bàn</h2><p>Phiếu được tạo ở trạng thái chờ nhà hàng xác nhận.</p></div></div>
 </section>
 <section class="discover" aria-labelledby="discover-title">
     <div class="section-heading"><div><p class="eyebrow">DÀNH CHO BẠN</p><h2 id="discover-title">Lên hẹn cho bữa ăn tiếp theo</h2></div><p>Mọi thông tin cho cuộc hẹn, ngay tại đây.</p></div>
@@ -32,7 +32,7 @@
         <article id="thuc-don" class="feature-card">
             <span class="card-number">01 / THỰC ĐƠN</span><h3>Hôm nay ăn gì?</h3>
             <p>Khám phá món ăn đang phục vụ, thông tin món và giá bán.</p>
-            <div class="availability">Thực đơn đang được chuẩn bị.</div>
+            <a class="button" asp-controller="MonAn" asp-action="ThucDon">Xem thực đơn</a>
         </article>
         <article id="ban-an" class="feature-card feature-card-green">
             <span class="card-number">02 / BÀN ĂN & ĐẶT BÀN</span><h3>Một chỗ ngồi vừa ý</h3>
@@ -41,23 +41,24 @@
         </article>
         <article id="phieu-dat-ban" class="feature-card">
             <span class="card-number">03 / PHIẾU ĐẶT BÀN</span><h3>Cuộc hẹn của bạn</h3>
-            <p>Theo dõi phiếu chờ xác nhận, đã xác nhận và xem thông tin từng cuộc hẹn.</p>
-            <div class="availability">Chức năng phiếu đặt bàn đang được chuẩn bị.</div>
+            <p>Chọn ngày, giờ và số người để gửi yêu cầu đặt bàn tới nhà hàng.</p>
+            <a class="button" asp-controller="PhieuDatBan" asp-action="DatBan">Đăng ký đặt bàn</a>
         </article>
     </div>
 </section>
 <div class="personal-grid">
     <section id="lich-su" class="personal-panel" aria-labelledby="history-title">
         <p class="eyebrow">NHỮNG CUỘC HẸN ĐÃ QUA</p><h2 id="history-title">Lịch sử đặt bàn</h2>
-        <p>Xem lại các phiếu đã sử dụng và đã hủy của bạn.</p>
-        <span class="muted">Lịch sử sẽ hiển thị khi chức năng đặt bàn sẵn sàng.</span>
+        <p class="muted">Theo dõi các phiếu chờ xác nhận, đã xác nhận, đã sử dụng và đã hủy.</p>
+        <a class="text-link" asp-controller="PhieuDatBan" asp-action="LichSu">Xem lịch sử đặt bàn</a>
     </section>
     <section id="tai-khoan" class="personal-panel" aria-labelledby="profile-title">
         <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p><h2 id="profile-title">Thông tin cá nhân</h2>
         @if (Context.Session.GetInt32("MaTaiKhoan") != null)
         {
             <p>Xin chào, <strong>@Context.Session.GetString("HoTen")</strong>.</p>
-            <span class="muted">Chức năng xem và cập nhật hồ sơ đang được chuẩn bị.</span>
+            <p class="muted">Xem và cập nhật thông tin liên hệ cho những lần đặt bàn tiếp theo.</p>
+            <a class="text-link" asp-controller="KhachHang" asp-action="CaNhan">Thông tin cá nhân</a>
         }
         else
         {

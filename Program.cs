@@ -1,4 +1,4 @@
-using Azure;
+﻿using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
@@ -17,6 +17,11 @@ namespace QuanLyNhaHang
             builder.Services.AddControllersWithViews();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<AccountRepository>();
+            builder.Services.AddScoped<KhachHangRepository>();
+            builder.Services.AddScoped<IKhachHangService, QuanLyNhaHang.Service.Implement.KhachHangService>();
+            builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+            builder.Services.AddScoped<PhieuDatBanRepository>();
+            builder.Services.AddScoped<IPhieuDatBanService, PhieuDatBanService>();
             builder.Services.AddScoped<LoaiBanRepository>();
             builder.Services.AddScoped<MonAnRepository>();
             builder.Services.AddScoped<IMonAnService, QuanLyNhaHang.Service.Implement.MonAnService>();

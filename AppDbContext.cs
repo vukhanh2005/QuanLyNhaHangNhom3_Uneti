@@ -18,9 +18,23 @@ public class AppDbContext : DbContext{
 
     public DbSet<BanAn> BanAns { get; set; }
 
+    public DbSet<PhieuDatBan> PhieuDatBans { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<PhieuDatBan>().HasOne(x => x.KhachHang).WithMany(x => x.PhieuDatBans)
+            .HasForeignKey(x => x.MaKhachHang).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PhieuDatBan>().HasOne(x => x.BanAn).WithMany(x => x.PhieuDatBans)
+            .HasForeignKey(x => x.MaBan).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PhieuDatBan>().Property(x => x.NgaySuDung).HasColumnType("date");
+        modelBuilder.Entity<PhieuDatBan>().HasIndex(x => new { x.MaBan, x.NgaySuDung });
+        modelBuilder.Entity<PhieuDatBan>().ToTable(t =>
+        {
+            t.HasCheckConstraint("CK_PhieuDatBans_SoNguoi", "[SoNguoi] > 0");
+            t.HasCheckConstraint("CK_PhieuDatBans_ThoiGian", "[GioKetThuc] > [GioBatDau]");
+            t.HasCheckConstraint("CK_PhieuDatBans_TrangThai", "[TrangThai] IN (0, 1, 2, 3)");
+        });
         modelBuilder.Entity<BanAn>().HasOne(x => x.LoaiBan).WithMany()
             .HasForeignKey(x => x.MaLoaiBan).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<BanAn>().HasIndex(x => x.TenBan).IsUnique();

@@ -147,8 +147,12 @@ public class BanAnController : Controller
         var entity = await context.BanAns.Include(x => x.LoaiBan)
             .FirstOrDefaultAsync(x => x.MaBan == id, cancellationToken);
         if (entity is null) return NotFound();
-        // Module 3: thêm AnyAsync(PhieuDatBan.MaBan == id) tại đây và FK Restrict.
-        // Không tạo entity phiếu giả. FK Restrict sẽ chặn cả xóa khi phát sinh quan hệ đồng thời.
+        // Giữ lịch sử đặt bàn; khóa ngoại vẫn bảo vệ nếu có phiếu mới phát sinh đồng thời.
+        if (await context.PhieuDatBans.AnyAsync(x => x.MaBan == id, cancellationToken))
+        {
+            ModelState.AddModelError("", "Bàn đã có phiếu đặt nên không thể xóa. Hãy chuyển sang Tạm ngừng phục vụ.");
+            return View("Delete", entity);
+        }
         if (entity.TrangThai == BanAnTrangThai.DangSuDung)
         {
             ModelState.AddModelError("", "Không thể xóa bàn đang sử dụng.");

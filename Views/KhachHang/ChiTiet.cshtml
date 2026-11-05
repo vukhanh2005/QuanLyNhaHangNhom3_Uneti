@@ -1,0 +1,22 @@
+@model QuanLyNhaHang.DTO.KhachHangResponse
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+    ViewData["Title"] = "Chi tiết khách hàng";
+    var tuKhoa = ViewData["TuKhoa"] as string;
+    var trangThai = ViewData["TrangThai"] as bool?;
+}
+<section class="admin-panel p-4">
+    <dl class="row">
+        <dt class="col-sm-4">Mã khách hàng</dt><dd class="col-sm-8">@Model.MaKhachHang</dd>
+        <dt class="col-sm-4">Mã tài khoản</dt><dd class="col-sm-8">@Model.MaTaiKhoan</dd>
+        <dt class="col-sm-4">Họ tên</dt><dd class="col-sm-8 text-break">@Model.HoTen</dd>
+        <dt class="col-sm-4">Ngày sinh</dt><dd class="col-sm-8">@Model.NgaySinh.ToString("dd/MM/yyyy")</dd>
+        <dt class="col-sm-4">Giới tính</dt><dd class="col-sm-8">@(Model.GioiTinh ? "Nam" : "Nữ")</dd>
+        <dt class="col-sm-4">Số điện thoại</dt><dd class="col-sm-8">@Model.SoDienThoai</dd>
+        <dt class="col-sm-4">Email</dt><dd class="col-sm-8 text-break">@Model.Email</dd>
+        <dt class="col-sm-4">Địa chỉ</dt><dd class="col-sm-8 text-break">@Model.DiaChi</dd>
+        <dt class="col-sm-4">Ngày đăng ký</dt><dd class="col-sm-8">@Model.NgayDangKy.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-4">Trạng thái hồ sơ</dt><dd class="col-sm-8">@(Model.TrangThai ? "Hoạt động" : "Ngừng hoạt động")</dd>
+    </dl>
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-tuKhoa="@tuKhoa" asp-route-trangThai="@trangThai">Quay lại danh sách</a>
+</section>

@@ -1,0 +1,63 @@
+@model QuanLyNhaHang.Models.PhieuDatBan?
+@using QuanLyNhaHang.Models
+@{
+    Layout = "/Views/Shared/ClientLayout.cshtml";
+    ViewData["Title"] = Model == null ? "Không tìm thấy phiếu" : $"Phiếu đặt bàn #{Model.MaPhieu}";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer-account.css" asp-append-version="true" />
+}
+<section class="customer-page" aria-labelledby="detail-title">
+    @if (Model == null)
+    {
+        <div class="customer-panel customer-empty">
+            <p class="eyebrow">PHIẾU ĐẶT BÀN</p>
+            <h1 id="detail-title">Không tìm thấy phiếu đặt bàn</h1>
+            <p class="muted">Phiếu không tồn tại hoặc không thuộc tài khoản đang đăng nhập.</p>
+            <div class="customer-actions">
+                <a class="button" asp-action="LichSu">Về lịch sử đặt bàn</a>
+                <a class="text-link" asp-action="DatBan">Đặt bàn mới</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="customer-heading">
+            <div>
+                <p class="eyebrow">THÔNG TIN CUỘC HẸN</p>
+                <h1 id="detail-title">Phiếu đặt bàn #@Model.MaPhieu</h1>
+                <p class="muted">Đặt lúc @Model.NgayDat.ToString("HH:mm") ngày @Model.NgayDat.ToString("dd/MM/yyyy").</p>
+            </div>
+            <a class="text-link" asp-action="LichSu">← Lịch sử đặt bàn</a>
+        </div>
+        @if (TempData["PhieuDatBanSuccess"] is string success)
+        {
+            <div class="customer-notice customer-notice-success" role="status">@success</div>
+        }
+        <div class="customer-panel">
+            <div class="history-card-heading">
+                <h2>@Model.BanAn.TenBan</h2>
+                <span class="customer-status @PhieuDatBanHienThi.LopTrangThai(Model.TrangThai)">@PhieuDatBanHienThi.TenTrangThai(Model.TrangThai)</span>
+            </div>
+            <dl class="detail-grid">
+                <div><dt>Ngày sử dụng</dt><dd>@Model.NgaySuDung.ToString("dd/MM/yyyy")</dd></div>
+                <div><dt>Giờ bắt đầu</dt><dd>@Model.GioBatDau.ToString(@"hh\:mm")</dd></div>
+                <div><dt>Giờ kết thúc</dt><dd>@Model.GioKetThuc.ToString(@"hh\:mm")</dd></div>
+                <div><dt>Số người</dt><dd>@Model.SoNguoi người</dd></div>
+                <div><dt>Khách hàng</dt><dd>@Model.KhachHang.HoTen</dd></div>
+                <div><dt>Số điện thoại</dt><dd>@Model.KhachHang.SoDienThoai</dd></div>
+                <div><dt>Vị trí bàn</dt><dd>@Model.BanAn.ViTri</dd></div>
+                <div><dt>Sức chứa bàn</dt><dd>@Model.BanAn.SoChoNgoi chỗ</dd></div>
+            </dl>
+            <div class="detail-note">
+                <h3>Ghi chú</h3>
+                <p>@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "Không có ghi chú." : Model.GhiChu)</p>
+            </div>
+            <p class="muted">Thời gian hiển thị theo giờ Việt Nam.</p>
+            <div class="customer-actions">
+                <a class="button" asp-action="LichSu">Về lịch sử đặt bàn</a>
+                <a class="text-link" asp-action="DatBan">Đặt bàn mới <span aria-hidden="true">↗</span></a>
+            </div>
+        </div>
+    }
+</section>

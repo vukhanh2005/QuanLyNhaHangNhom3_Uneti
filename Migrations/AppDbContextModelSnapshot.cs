@@ -130,6 +130,58 @@ namespace QuanLyNhaHang.Migrations
                     b.ToTable("MonAn");
                 });
 
+            modelBuilder.Entity("QuanLyNhaHang.Models.PhieuDatBan", b =>
+                {
+                    b.Property<int>("MaPhieu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieu"));
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<TimeSpan>("GioBatDau")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("GioKetThuc")
+                        .HasColumnType("time");
+
+                    b.Property<int>("MaBan")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaKhachHang")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayDat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NgaySuDung")
+                        .HasColumnType("date");
+
+                    b.Property<int>("SoNguoi")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrangThai")
+                        .HasColumnType("int");
+
+                    b.HasKey("MaPhieu");
+
+                    b.HasIndex("MaKhachHang");
+
+                    b.HasIndex("MaBan", "NgaySuDung");
+
+                    b.ToTable("PhieuDatBans", t =>
+                        {
+                            t.HasCheckConstraint("CK_PhieuDatBans_SoNguoi", "[SoNguoi] > 0");
+
+                            t.HasCheckConstraint("CK_PhieuDatBans_ThoiGian", "[GioKetThuc] > [GioBatDau]");
+
+                            t.HasCheckConstraint("CK_PhieuDatBans_TrangThai", "[TrangThai] IN (0, 1, 2, 3)");
+                        });
+                });
+
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
                 {
                     b.Property<int>("MaTaiKhoan")
@@ -228,6 +280,25 @@ namespace QuanLyNhaHang.Migrations
                     b.Navigation("TaiKhoan");
                 });
 
+            modelBuilder.Entity("QuanLyNhaHang.Models.PhieuDatBan", b =>
+                {
+                    b.HasOne("QuanLyNhaHangNhom3_Uneti.Models.BanAn", "BanAn")
+                        .WithMany("PhieuDatBans")
+                        .HasForeignKey("MaBan")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyNhaHang.Models.KhachHang", "KhachHang")
+                        .WithMany("PhieuDatBans")
+                        .HasForeignKey("MaKhachHang")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BanAn");
+
+                    b.Navigation("KhachHang");
+                });
+
             modelBuilder.Entity("QuanLyNhaHangNhom3_Uneti.Models.BanAn", b =>
                 {
                     b.HasOne("QuanLyNhaHang.Models.LoaiBan", "LoaiBan")
@@ -239,9 +310,19 @@ namespace QuanLyNhaHang.Migrations
                     b.Navigation("LoaiBan");
                 });
 
+            modelBuilder.Entity("QuanLyNhaHang.Models.KhachHang", b =>
+                {
+                    b.Navigation("PhieuDatBans");
+                });
+
             modelBuilder.Entity("QuanLyNhaHang.Models.TaiKhoan", b =>
                 {
                     b.Navigation("KhachHang");
+                });
+
+            modelBuilder.Entity("QuanLyNhaHangNhom3_Uneti.Models.BanAn", b =>
+                {
+                    b.Navigation("PhieuDatBans");
                 });
 #pragma warning restore 612, 618
         }
