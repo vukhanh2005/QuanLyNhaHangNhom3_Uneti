@@ -7,7 +7,8 @@ namespace QuanLyNhaHang.Controllers.Module04
     {
         private readonly IPhieuDatBanService _phieuDatBanService;
 
-        public PhieuDatBanController(IPhieuDatBanService phieuDatBanService)
+        public PhieuDatBanController(
+            IPhieuDatBanService phieuDatBanService)
         {
             _phieuDatBanService = phieuDatBanService;
         }
@@ -21,7 +22,9 @@ namespace QuanLyNhaHang.Controllers.Module04
         private bool DaDangNhap => MaTaiKhoan.HasValue;
 
         private bool LaAdmin =>
-            string.Equals(VaiTro, "Admin",
+            string.Equals(
+                VaiTro,
+                "Admin",
                 StringComparison.OrdinalIgnoreCase);
 
         private IActionResult VeTrangDangNhap()
@@ -34,6 +37,7 @@ namespace QuanLyNhaHang.Controllers.Module04
             return RedirectToAction("Index", "TrangChu");
         }
 
+        // Danh sách phiếu đặt bàn
         public async Task<IActionResult> Index(
             string? tenKhachHang,
             string? tenBan,
@@ -46,16 +50,23 @@ namespace QuanLyNhaHang.Controllers.Module04
             if (LaAdmin)
             {
                 var model = await _phieuDatBanService.GetDanhSachAsync(
-                    tenKhachHang, tenBan, trangThai, ngaySuDung);
+                    tenKhachHang,
+                    tenBan,
+                    trangThai,
+                    ngaySuDung);
 
                 return View(
                     "~/Views/PhieuDatBan/Admin/Index.cshtml",
                     model);
             }
 
-            if (!string.Equals(VaiTro, "User",
+            if (!string.Equals(
+                VaiTro,
+                "User",
                 StringComparison.OrdinalIgnoreCase))
+            {
                 return KhongCoQuyen();
+            }
 
             var danhSachCuaToi =
                 await _phieuDatBanService.GetDanhSachTheoTaiKhoanAsync(
@@ -70,25 +81,33 @@ namespace QuanLyNhaHang.Controllers.Module04
                 danhSachCuaToi);
         }
 
+        // Xem chi tiết phiếu
         public async Task<IActionResult> Details(int id)
         {
             if (!DaDangNhap)
                 return VeTrangDangNhap();
 
             if (!LaAdmin &&
-                !string.Equals(VaiTro, "User",
+                !string.Equals(
+                    VaiTro,
+                    "User",
                     StringComparison.OrdinalIgnoreCase))
+            {
                 return KhongCoQuyen();
+            }
 
-            var phieu = await _phieuDatBanService.GetChiTietAsync(id);
+            var phieu =
+                await _phieuDatBanService.GetChiTietAsync(id);
 
             if (phieu == null)
                 return NotFound();
 
-            // Client chỉ được xem phiếu của tài khoản mình.
+            // Client chỉ được xem phiếu của mình
             if (!LaAdmin &&
                 phieu.KhachHang?.MaTaiKhoan != MaTaiKhoan)
+            {
                 return Forbid();
+            }
 
             if (LaAdmin)
             {
@@ -102,10 +121,12 @@ namespace QuanLyNhaHang.Controllers.Module04
                 phieu);
         }
 
+        // Xác nhận, hủy, bắt đầu hoặc kết thúc sử dụng
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CapNhatTrangThai(
-            int id, string trangThaiMoi)
+            int id,
+            string trangThaiMoi)
         {
             if (!DaDangNhap)
                 return VeTrangDangNhap();
@@ -115,16 +136,17 @@ namespace QuanLyNhaHang.Controllers.Module04
 
             var ketQua =
                 await _phieuDatBanService.CapNhatTrangThaiAsync(
-                    id, trangThaiMoi);
+                    id,
+                    trangThaiMoi);
 
-            if (ketQua.ThanhCong)
-                TempData["SuccessMessage"] = ketQua.ThongBao;
-            else
-                TempData["ErrorMessage"] = ketQua.ThongBao;
+            TempData[ketQua.ThanhCong
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Xác nhận phiếu
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> XacNhan(int id)
@@ -137,14 +159,17 @@ namespace QuanLyNhaHang.Controllers.Module04
 
             var ketQua =
                 await _phieuDatBanService.CapNhatTrangThaiAsync(
-                    id, "Đã xác nhận");
+                    id,
+                    "Đã xác nhận");
 
             TempData[ketQua.ThanhCong
-                ? "SuccessMessage" : "ErrorMessage"] = ketQua.ThongBao;
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Hủy phiếu
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Huy(int id)
@@ -157,14 +182,17 @@ namespace QuanLyNhaHang.Controllers.Module04
 
             var ketQua =
                 await _phieuDatBanService.CapNhatTrangThaiAsync(
-                    id, "Đã hủy");
+                    id,
+                    "Đã hủy");
 
             TempData[ketQua.ThanhCong
-                ? "SuccessMessage" : "ErrorMessage"] = ketQua.ThongBao;
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Bắt đầu sử dụng bàn
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BatDauSuDung(int id)
@@ -177,14 +205,17 @@ namespace QuanLyNhaHang.Controllers.Module04
 
             var ketQua =
                 await _phieuDatBanService.CapNhatTrangThaiAsync(
-                    id, "Đang sử dụng");
+                    id,
+                    "Đang sử dụng");
 
             TempData[ketQua.ThanhCong
-                ? "SuccessMessage" : "ErrorMessage"] = ketQua.ThongBao;
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Kết thúc sử dụng bàn
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> KetThucSuDung(int id)
@@ -197,12 +228,35 @@ namespace QuanLyNhaHang.Controllers.Module04
 
             var ketQua =
                 await _phieuDatBanService.CapNhatTrangThaiAsync(
-                    id, "Đã sử dụng");
+                    id,
+                    "Đã sử dụng");
 
             TempData[ketQua.ThanhCong
-                ? "SuccessMessage" : "ErrorMessage"] = ketQua.ThongBao;
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
 
             return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // Xóa phiếu đặt bàn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Xoa(int id)
+        {
+            if (!DaDangNhap)
+                return VeTrangDangNhap();
+
+            if (!LaAdmin)
+                return KhongCoQuyen();
+
+            var ketQua =
+                await _phieuDatBanService.XoaAsync(id);
+
+            TempData[ketQua.ThanhCong
+                ? "SuccessMessage"
+                : "ErrorMessage"] = ketQua.ThongBao;
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -9,12 +9,14 @@ namespace QuanLyNhaHang.Service.Implement
     {
         private readonly AppDbContext _context;
 
+        private const int ThoiLuongDatBanGio = 2;
+
         public PhieuDatBanService(AppDbContext context)
         {
             _context = context;
         }
 
-        // Lấy danh sách phiếu đặt bàn và lọc dữ liệu
+        // Lấy toàn bộ phiếu đặt bàn dành cho Admin
         public async Task<PhieuDatBanViewModel> GetDanhSachAsync(
             string? tenKhachHang,
             string? tenBan,
@@ -48,6 +50,7 @@ namespace QuanLyNhaHang.Service.Implement
             if (!string.IsNullOrWhiteSpace(trangThai))
             {
                 var status = trangThai.Trim();
+
                 query = query.Where(p => p.TrangThai == status);
             }
 
@@ -74,66 +77,73 @@ namespace QuanLyNhaHang.Service.Implement
                 NgaySuDung = ngaySuDung
             };
         }
-         public async Task<PhieuDatBanViewModel> GetDanhSachTheoTaiKhoanAsync(
-    int maTaiKhoan,
-    string? tenKhachHang,
-    string? tenBan,
-    string? trangThai,
-    DateTime? ngaySuDung)
-{
-    var query = _context.PhieuDatBans
-        .AsNoTracking()
-        .Include(p => p.KhachHang)
-        .Include(p => p.BanAn)
-        .Where(p => p.KhachHang != null &&
+
+        // Lấy phiếu đặt bàn của một tài khoản Client
+        public async Task<PhieuDatBanViewModel> GetDanhSachTheoTaiKhoanAsync(
+            int maTaiKhoan,
+            string? tenKhachHang,
+            string? tenBan,
+            string? trangThai,
+            DateTime? ngaySuDung)
+        {
+            var query = _context.PhieuDatBans
+                .AsNoTracking()
+                .Include(p => p.KhachHang)
+                .Include(p => p.BanAn)
+                .Where(p =>
+                    p.KhachHang != null &&
                     p.KhachHang.MaTaiKhoan == maTaiKhoan)
-        .AsQueryable();
+                .AsQueryable();
 
-    if (!string.IsNullOrWhiteSpace(tenKhachHang))
-    {
-        var ten = tenKhachHang.Trim();
-        query = query.Where(p =>
-            p.KhachHang != null &&
-            p.KhachHang.HoTen.Contains(ten));
-    }
+            if (!string.IsNullOrWhiteSpace(tenKhachHang))
+            {
+                var ten = tenKhachHang.Trim();
 
-    if (!string.IsNullOrWhiteSpace(tenBan))
-    {
-        var ten = tenBan.Trim();
-        query = query.Where(p =>
-            p.BanAn != null &&
-            p.BanAn.TenBan.Contains(ten));
-    }
+                query = query.Where(p =>
+                    p.KhachHang != null &&
+                    p.KhachHang.HoTen.Contains(ten));
+            }
 
-    if (!string.IsNullOrWhiteSpace(trangThai))
-    {
-        var status = trangThai.Trim();
-        query = query.Where(p => p.TrangThai == status);
-    }
+            if (!string.IsNullOrWhiteSpace(tenBan))
+            {
+                var ten = tenBan.Trim();
 
-    if (ngaySuDung.HasValue)
-    {
-        var ngay = ngaySuDung.Value.Date;
-        var ngayTiepTheo = ngay.AddDays(1);
+                query = query.Where(p =>
+                    p.BanAn != null &&
+                    p.BanAn.TenBan.Contains(ten));
+            }
 
-        query = query.Where(p =>
-            p.NgayGioDat >= ngay &&
-            p.NgayGioDat < ngayTiepTheo);
-    }
+            if (!string.IsNullOrWhiteSpace(trangThai))
+            {
+                var status = trangThai.Trim();
 
-    var danhSach = await query
-        .OrderByDescending(p => p.NgayGioDat)
-        .ToListAsync();
+                query = query.Where(p => p.TrangThai == status);
+            }
 
-    return new PhieuDatBanViewModel
-    {
-        DanhSachPhieuDatBan = danhSach,
-        TenKhachHang = tenKhachHang,
-        TenBan = tenBan,
-        TrangThai = trangThai,
-        NgaySuDung = ngaySuDung
-    };
-}
+            if (ngaySuDung.HasValue)
+            {
+                var ngay = ngaySuDung.Value.Date;
+                var ngayTiepTheo = ngay.AddDays(1);
+
+                query = query.Where(p =>
+                    p.NgayGioDat >= ngay &&
+                    p.NgayGioDat < ngayTiepTheo);
+            }
+
+            var danhSach = await query
+                .OrderByDescending(p => p.NgayGioDat)
+                .ToListAsync();
+
+            return new PhieuDatBanViewModel
+            {
+                DanhSachPhieuDatBan = danhSach,
+                TenKhachHang = tenKhachHang,
+                TenBan = tenBan,
+                TrangThai = trangThai,
+                NgaySuDung = ngaySuDung
+            };
+        }
+
         // Lấy chi tiết phiếu đặt bàn
         public async Task<PhieuDatBan?> GetChiTietAsync(int id)
         {
@@ -146,7 +156,7 @@ namespace QuanLyNhaHang.Service.Implement
                     p => p.MaPhieuDatBan == id);
         }
 
-        // Cập nhật trạng thái phiếu và trạng thái bàn
+        // Cập nhật trạng thái phiếu đặt bàn và bàn ăn
         public async Task<(bool ThanhCong, string ThongBao)>
             CapNhatTrangThaiAsync(int id, string trangThaiMoi)
         {
@@ -203,48 +213,47 @@ namespace QuanLyNhaHang.Service.Implement
             {
                 return (
                     false,
-                    $"Không thể chuyển từ '{trangThaiCu}' " +
-                    $"sang '{trangThaiMoi}'.");
+                    $"Không thể chuyển từ '{trangThaiCu}' sang '{trangThaiMoi}'.");
             }
 
-            // Mỗi lượt đặt bàn kéo dài 2 giờ.
-const int thoiLuongDatBanGio = 2;
-
-if (trangThaiMoi == "Đã xác nhận" ||
-    trangThaiMoi == "Đang sử dụng")
-{
-    if (ban == null)
-        return (false, "Phiếu chưa được gán bàn.");
-
-    var batDau = phieu.NgayGioDat;
-    var ketThuc = batDau.AddHours(thoiLuongDatBanGio);
-
-    var coPhieuTrung = await _context.PhieuDatBans
-        .AnyAsync(p =>
-            p.MaPhieuDatBan != id &&
-            p.MaBan == ban.MaBan &&
-            p.TrangThai != "Đã hủy" &&
-            p.NgayGioDat < ketThuc &&
-            p.NgayGioDat.AddHours(thoiLuongDatBanGio) > batDau);
-
-    if (coPhieuTrung)
-    {
-        return (
-            false,
-            "Bàn đã có phiếu đặt trùng khung giờ. Vui lòng kiểm tra lại.");
-    }
-}
-            // Bắt đầu sử dụng bàn
-            if (trangThaiMoi == "Đang sử dụng")
+            // Kiểm tra trùng lịch khi xác nhận hoặc bắt đầu sử dụng
+            if (trangThaiMoi == "Đã xác nhận" ||
+                trangThaiMoi == "Đang sử dụng")
             {
                 if (ban == null)
                 {
                     return (false, "Phiếu chưa được gán bàn.");
                 }
 
-                if (ban.TrangThai != "Sẵn sàng")
+                var batDau = phieu.NgayGioDat;
+                var ketThuc = batDau.AddHours(ThoiLuongDatBanGio);
+                var mocBatDau = batDau.AddHours(-ThoiLuongDatBanGio);
+
+                var coPhieuTrung = await _context.PhieuDatBans
+                    .AnyAsync(p =>
+                        p.MaPhieuDatBan != id &&
+                        p.MaBan == ban.MaBan &&
+                        p.TrangThai != "Đã hủy" &&
+                        p.NgayGioDat > mocBatDau &&
+                        p.NgayGioDat < ketThuc);
+
+                if (coPhieuTrung)
                 {
-                    return (false, "Bàn hiện không sẵn sàng.");
+                    return (
+                        false,
+                        "Bàn đã có phiếu đặt trùng khung giờ.");
+                }
+            }
+
+            // Bắt đầu sử dụng bàn
+            if (trangThaiMoi == "Đang sử dụng")
+            {
+                if (ban == null ||
+                    ban.TrangThai != "Sẵn sàng")
+                {
+                    return (
+                        false,
+                        "Bàn hiện không sẵn sàng.");
                 }
 
                 ban.TrangThai = "Đang sử dụng";
@@ -271,6 +280,32 @@ if (trangThaiMoi == "Đã xác nhận" ||
             return (
                 true,
                 "Cập nhật trạng thái phiếu đặt bàn thành công.");
+        }
+
+        // Xóa phiếu đặt bàn
+        public async Task<(bool ThanhCong, string ThongBao)> XoaAsync(int id)
+        {
+            var phieu = await _context.PhieuDatBans
+                .FirstOrDefaultAsync(p =>
+                    p.MaPhieuDatBan == id);
+
+            if (phieu == null)
+            {
+                return (false, "Không tìm thấy phiếu đặt bàn.");
+            }
+
+            if (phieu.TrangThai == "Đang sử dụng")
+            {
+                return (
+                    false,
+                    "Không thể xóa phiếu đang sử dụng bàn.");
+            }
+
+            _context.PhieuDatBans.Remove(phieu);
+
+            await _context.SaveChangesAsync();
+
+            return (true, "Xóa phiếu đặt bàn thành công.");
         }
     }
 }

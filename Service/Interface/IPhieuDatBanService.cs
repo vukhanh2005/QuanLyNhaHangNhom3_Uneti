@@ -24,5 +24,7 @@ namespace QuanLyNhaHang.Service.Interface
         Task<(bool ThanhCong, string ThongBao)> CapNhatTrangThaiAsync(
             int id,
             string trangThaiMoi);
+            
+        Task<(bool ThanhCong, string ThongBao)> XoaAsync(int id);    
     }
 }
