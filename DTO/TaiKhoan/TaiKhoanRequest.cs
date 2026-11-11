@@ -13,7 +13,7 @@ namespace QuanLyNhaHang.DTO
         public bool? gioiTinh { get; set; }
         public string soDienThoai { get; set; } = string.Empty;
         public string diaChi { get; set; } = string.Empty;
-
+        public bool RememberMe { get; set; }
         public TaiKhoan ConvertToTaiKhoan()
         {
             TaiKhoan rs = new TaiKhoan();

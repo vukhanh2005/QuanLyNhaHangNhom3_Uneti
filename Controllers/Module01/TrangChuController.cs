@@ -15,34 +15,35 @@ namespace QuanLyNhaHang.Controllers
             this.monAnService = monAnService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(VaiTro? role)
         {
-            if(HttpContext.Session.GetInt32("MaTaiKhoan") != null)
-            {
-                //Da dang nhap roi
-                if(HttpContext.Session.GetString("VaiTro") == nameof(VaiTro.Admin))
-                {
-                    // Hai service dùng chung DbContext scoped, nên truy vấn tuần tự.
-                    var loaiBans = await loaiBanService.GetAllLoaiBan();
-                    var monAns = await monAnService.GetAll();
-                    return View("Admin", new DashboardViewModel
-                    {
-                        TongLoaiBan = loaiBans.Count,
-                        LoaiBanHoatDong = loaiBans.Count(x => x.TrangThai),
-                        TongMonAn = monAns.Count,
-                        MonAnDangPhucVu = monAns.Count(x => x.TrangThai == TrangThaiMonAn.DangPhucVu)
-                    });
-                }
-                else
-                {
-                    return View("Client");
-                }
-            }
-            else
-            {
-                //Direct den trang dang nhap
-                return RedirectToAction("Login", "Account");
-            }
+            // if(HttpContext.Session.GetInt32("MaTaiKhoan") != null)
+            // {
+            //     //Da dang nhap roi
+            //     if(HttpContext.Session.GetString("VaiTro") == nameof(VaiTro.Admin))
+            //     {
+            //         // Hai service dùng chung DbContext scoped, nên truy vấn tuần tự.
+            //         var loaiBans = await loaiBanService.GetAllLoaiBan();
+            //         var monAns = await monAnService.GetAll();
+            //         return View("Admin", new DashboardViewModel
+            //         {
+            //             TongLoaiBan = loaiBans.Count,
+            //             LoaiBanHoatDong = loaiBans.Count(x => x.TrangThai),
+            //             TongMonAn = monAns.Count,
+            //             MonAnDangPhucVu = monAns.Count(x => x.TrangThai == TrangThaiMonAn.DangPhucVu)
+            //         });
+            //     }
+            //     else
+            //     {
+            //         return View("Client");
+            //     }
+            // }
+            // else
+            // {
+            //     //Direct den trang dang nhap
+            //     return RedirectToAction("Login", "Account");
+            // }
+            return View(role == null ? "Client" : (role == VaiTro.User ? "Client" : "Admin"));
         }
 
         public IActionResult Privacy()

@@ -5,6 +5,7 @@ using QuanLyNhaHang.Repository;
 using QuanLyNhaHang.Service;
 using QuanLyNhaHang.Service.Implement;
 using QuanLyNhaHang.Helpers;
+using QuanLyNhaHang.Models;
 
 namespace QuanLyNhaHang.Controllers.Module01
 {
@@ -24,21 +25,20 @@ namespace QuanLyNhaHang.Controllers.Module01
         [HttpPost]
         public async Task<IActionResult> Login(TaiKhoanRequest request)
         {
+            bool isSave = request.RememberMe;
             TaiKhoanResponse response = await service.Login(request);
 
             if (response.message != null && response.message.StartsWith("[SUCCESS]"))
             {
-                // Lưu vào session theo yêu cầu đề tài
-                HttpContext.Session.SetInt32("MaTaiKhoan", response.maTaiKhoan);
-                HttpContext.Session.SetString("HoTen", response.hoTen ?? "");
-                HttpContext.Session.SetString("VaiTro", response.vaiTro ?? "");
 
-                // Chuyển hướng theo vai trò người dùng
-                if (response.vaiTro == "Admin")
+                if (isSave)
                 {
-                    return RedirectToAction("Index", "TrangChu");
+                    // Lưu vào session theo yêu cầu đề tài
+                    HttpContext.Session.SetInt32("MaTaiKhoan", response.maTaiKhoan);
+                    HttpContext.Session.SetString("HoTen", response.hoTen ?? "");
+                    HttpContext.Session.SetString("VaiTro", response.vaiTro ?? "");
                 }
-                return RedirectToAction("Index", "TrangChu");
+                return RedirectToAction("Index", "TrangChu", new {role = response.vaiTro});
             }
             else
             {

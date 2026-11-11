@@ -11,6 +11,8 @@ obj/
 
 # ASP.NET local settings
 appsettings.Local.json
+.env
+*.env
 
 # OS files
 .DS_Store
@@ -18,3 +20,7 @@ Thumbs.db
 
 # Office temporary files
 ~$*
+
+# Entity Framework Migrations
+Migrations/
+[Mm]igrations/
