@@ -4,6 +4,7 @@ using QuanLyNhaHangNhom3_Uneti.Models;
 
 public interface IPhieuDatBanService
 {
+    Task<PhieuDatBanResult> XacNhan(int maTaiKhoan, CancellationToken cancellationToken = default);
     Task<PhieuDatBanResult> TaoPhieu(int maTaiKhoan, PhieuDatBanRequest request,
         CancellationToken cancellationToken = default);
     Task<PhieuDatBanResult> Huy(int maPhieu, int? maTaiKhoan = null,

@@ -10,6 +10,19 @@ namespace QuanLyNhaHang.Service.Implement;
 
 public class PhieuDatBanService(PhieuDatBanRepository repository, TimeProvider clock) : IPhieuDatBanService
 {
+    public async Task<PhieuDatBanResult> XacNhan(int maPhieu, CancellationToken cancellationToken = default)
+    {
+        var result = await repository.GetById(maPhieu, cancellationToken);
+
+        if(result == null)
+        {
+            return new PhieuDatBanResult{Message = "Co loi xay ra!", IsSuccess = false};
+        }
+        else
+        {
+            return new PhieuDatBanResult{Message = "Xac nhan thanh cong", IsSuccess = true};
+        }
+    }
     private static readonly TimeZoneInfo MuiGioVietNam =
         TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 

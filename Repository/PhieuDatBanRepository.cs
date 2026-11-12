@@ -10,7 +10,13 @@ public class PhieuDatBanRepository(AppDbContext context)
     public Task<KhachHang?> TimKhachHangTheoTaiKhoan(int maTaiKhoan, CancellationToken cancellationToken) =>
         context.KhachHangs.AsNoTracking().Include(x => x.TaiKhoan)
             .FirstOrDefaultAsync(x => x.MaTaiKhoan == maTaiKhoan, cancellationToken);
+    public async Task<PhieuDatBan?> XacNhan(int maPhieu, CancellationToken cancellationToken)
+    {
+        var phieu = await GetById(maPhieu, cancellationToken);
+        phieu.TrangThai = TrangThaiPhieuDatBan.DaXacNhan;
 
+        return phieu;
+    }
     public Task<PhieuDatBan?> GetById(int maPhieu, CancellationToken cancellationToken) =>
         context.PhieuDatBans.AsNoTracking().Include(x => x.KhachHang)
             .FirstOrDefaultAsync(x => x.MaPhieu == maPhieu, cancellationToken);

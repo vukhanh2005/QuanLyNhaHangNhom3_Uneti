@@ -1,0 +1,78 @@
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@{
+    Layout = "/Views/Shared/AdminLayout.cshtml";
+}
+@model List<PhieuDatBan>
+    <style>
+        .table-phieu-dat-ban{
+            
+        }
+        td{
+            border: 1px solid black;
+            padding: 15px;
+        }
+    </style>
+<div>
+    @{
+        if(ViewBag.IsSuccess == false && ViewBag.SuccessMessage == null)
+        {
+            <p>Xac nhan that bai!!!!!!!</p>
+        }else if (ViewBag.IsSuccess == true && ViewBag.SuccessMessage != null)
+        {
+            <p>Xac nhan thanh cong phieu dat ban @ViewBag.MaPhieu</p>
+        }
+        if((Model == null || Model.Count <= 0) && ViewBag.IsSuccess == null)
+        {
+            <p>Khong co phieu dat hang trong csdl</p>
+        }
+        else
+        {
+            <table class="table-phieu-dat-ban">
+                <th>
+                    <tr>
+                        <td>Ma phieu</td>
+                        <td>Ten khach hang</td>
+                        <td>Ten ban</td>
+                        <td>Ngay dat</td>
+                        <td>Gio bat dau</td>
+                        <td>Gio ket thuc</td>
+                        <td>So nguoi</td>
+                        <td>Trang thai</td>
+                    </tr>
+                </th>
+                <tbody>
+                @{
+                    foreach(var phieu in Model)
+                    {
+                        <tr>
+                            <td>@phieu.MaPhieu</td>
+                            <td>@phieu.KhachHang.HoTen</td>
+                            <td>@phieu.BanAn.TenBan</td>
+                            <td>@phieu.NgayDat.ToShortDateString()</td>
+                            <td>@phieu.GioBatDau.ToString()</td>
+                            <td>@phieu.GioKetThuc.ToString()</td>
+                            <td>@phieu.SoNguoi</td>
+                            <td>
+                            @{
+                                if(phieu.TrangThai == TrangThaiPhieuDatBan.ChoXacNhan)
+                                {
+                                    <form asp-controller="PhieuDatBan"
+                                        asp-action="XacNhan"
+                                        method="post">
+
+                                        <button type="submit">
+                                            Xác nhận
+                                        </button>
+                                        <input hidden name="idPhieu" value="@phieu.MaPhieu"/>
+                                    </form>
+                                }
+                            }
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        }
+    }
+</div>

@@ -32,12 +32,23 @@ public class PhieuDatBanController(IPhieuDatBanService service) : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         if (IsCustomer()) return RedirectToAction(nameof(LichSu));
-        return RedirectToAction("Index", "TrangChu");
-    }
 
+        List<PhieuDatBan> list = await service.GetAll();
+
+        return View("Admin/Index", list);
+    }
+    [HttpPost]
+    public async Task<IActionResult> XacNhan(int idPhieu, CancellationToken cancellationToken = default)
+    {
+        PhieuDatBanResult datBan = await service.XacNhan(idPhieu, cancellationToken);
+        ViewBag.IsSuccess = datBan.IsSuccess;
+        ViewBag.SuccessMessage = datBan.Message;
+        ViewBag.MaPhieu = datBan.MaPhieu;
+        return View("Admin/Index");
+    }
     [HttpGet]
     public async Task<IActionResult> LichSu(CancellationToken cancellationToken = default)
     {
