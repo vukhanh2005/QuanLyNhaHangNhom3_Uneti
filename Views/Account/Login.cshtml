@@ -1,92 +1,159 @@
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @{
     Layout = null;
+    ViewData["Title"] = "Đăng nhập";
 }
-
 <!DOCTYPE html>
-<html lang="en">
-    <style>
-        html{
-            width: auto;
-            width: auto;
-        }
-        .wrapper-login-form{
-            border: 2px solid black;
-            padding: 10px;
-            width: fit-content;
-        }
-        body{
-            width: 100%;
-            height: 100vh;
-
-            display: flex;
-
-            justify-content: center;
-            align-items: center;
-        }
-        .input-box{
-            padding: 5px;
-        }
-        .button-box{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .message-section{
-            color: red;
-        }
-        .success-message{
-            color: green;
-        }
-        .fail-message{
-            color: red;
-        }
-        .login-form{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>@ViewData["Title"] - Nhà Hàng</title>
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
 </head>
-<body>
-   <div class="wrapper-login-form">
-    <form class="login-form" method="post"s>
-        <div class="title-login-form">
-            <p>NHA HANG KNEE GA</p>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Quay lại trang chủ -->
+        <div class="auth-top-bar">
+            <a class="auth-back-link" asp-controller="TrangChu" asp-action="Index">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Trang chủ
+            </a>
         </div>
-        <div class="input-box">
-            <input placeholder="Username...." name="username"/>
-        </div>
-        <div class="input-box">
-            <input placeholder="Password...."name="password"/>
-        </div>
-        <div class="button-box">
-            <button asp-controller="Account" asp-action="Login">Đăng nhập</button>
-            <a asp-controller="Account" asp-action="Register">Đăng Kí</a>
-        </div>
-            @{
-                if(ViewBag.SuccessMessage != null)
-                {
-                    <p class="success-message">
-                        Đăng nhập thành công!!!!!
-                    </p>
-                    <script>
-                        window.location.href = '@Url.Action("Index", "TrangChu")'
-                    </script>
-                }
-                if(ViewBag.FailMessage != null)
-                {
-                    <p class="fail-message">
-                        Đăng nhập thất bại: @ViewBag.FailMessage
-                    </p>
-                }
+
+        <div class="auth-card">
+            <!-- Header thương hiệu -->
+            <div class="auth-header">
+                <a class="auth-brand" asp-controller="TrangChu" asp-action="Index">
+                    <span class="auth-brand-mark" aria-hidden="true">N</span>
+                    <span class="auth-brand-name">
+                        NHÀ HÀNG
+                        <small>GẮN KẾT QUA TỪNG BỮA ĂN</small>
+                    </span>
+                </a>
+                <h1 class="auth-title">Chào mừng trở lại</h1>
+                <p class="auth-subtitle">Đăng nhập tài khoản để đặt bàn và nhận ưu đãi</p>
+            </div>
+
+            <!-- Thông báo thành công / thất bại -->
+            @if (ViewBag.SuccessMessage != null)
+            {
+                <div class="auth-alert auth-alert-success" role="alert">
+                    <svg class="auth-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <div>
+                        <strong>Thành công!</strong> Đang chuyển hướng về trang chủ...
+                    </div>
+                </div>
+                <script>
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index", "TrangChu")';
+                    }, 1000);
+                </script>
             }
-    </form>
-   </div>
+
+            @if (ViewBag.FailMessage != null)
+            {
+                <div class="auth-alert auth-alert-danger" role="alert">
+                    <svg class="auth-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>
+                        <strong>Đăng nhập không thành công:</strong> @ViewBag.FailMessage
+                    </div>
+                </div>
+            }
+
+            <!-- Form đăng nhập -->
+            <form class="auth-form" method="post" asp-controller="Account" asp-action="Login">
+                <div class="auth-group">
+                    <label class="auth-label" for="username">Tên đăng nhập</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input id="username" 
+                               name="username" 
+                               class="auth-input" 
+                               placeholder="Nhập tên đăng nhập..." 
+                               required 
+                               autocomplete="username" 
+                               autofocus />
+                    </div>
+                </div>
+
+                <div class="auth-group">
+                    <label class="auth-label" for="password">Mật khẩu</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input id="password" 
+                               name="password" 
+                               type="password" 
+                               class="auth-input" 
+                               placeholder="Nhập mật khẩu..." 
+                               required 
+                               autocomplete="current-password" />
+                        <button type="button" class="auth-password-toggle" onclick="togglePasswordVisibility('password', this)" aria-label="Hiện/Ẩn mật khẩu">
+                            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-closed" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="auth-checkbox-label">
+                        <input type="checkbox" name="RememberMe">
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn-primary">
+                    Đăng nhập
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Chưa có tài khoản? <a asp-controller="Account" asp-action="Register">Đăng ký thành viên ngay</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

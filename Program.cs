@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Microsoft.EntityFrameworkCore;
 using QuanLyNhaHang.Models;
 using QuanLyNhaHang.Repository;
@@ -11,6 +11,9 @@ namespace QuanLyNhaHang
     {
         public static async Task Main(string[] args)
         {
+            // Tải biến môi trường từ file .env nếu có
+            LoadDotEnv();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -29,7 +32,7 @@ namespace QuanLyNhaHang
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(10);
+                options.IdleTimeout = TimeSpan.FromMinutes(100);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -41,6 +44,10 @@ namespace QuanLyNhaHang
             });
             
             var app = builder.Build();
+
+            // Tự động kiểm tra và seed tài khoản Admin từ .env nếu chưa có
+            await EnsureAdminAccountAsync(app);
+
             // Vi Thái Học - 23103100054: chỉ seed Module 2 khi được gọi rõ ràng.
             if (args.Contains("--seed-ban-an"))
             {
@@ -100,6 +107,83 @@ namespace QuanLyNhaHang
                 pattern: "{controller=TrangChu}/{action=Index}/{id?}")
                 .WithStaticAssets();
             await app.RunAsync();
+        }
+
+        /// <summary>
+        /// Đọc các biến cấu hình từ file .env vào Environment Variables
+        /// </summary>
+        private static void LoadDotEnv()
+        {
+            var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+            if (!File.Exists(envPath)) return;
+
+            foreach (var line in File.ReadAllLines(envPath))
+            {
+                var trimmed = line.Trim();
+                if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("#"))
+                    continue;
+
+                var parts = trimmed.Split('=', 2);
+                if (parts.Length == 2)
+                {
+                    var key = parts[0].Trim();
+                    var value = parts[1].Trim().Trim('"', '\'');
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra database xem đã có tài khoản Admin nào chưa.
+        /// Nếu chưa, tự động seed tài khoản Admin theo cấu hình trong .env qua AccountSeeder.
+        /// </summary>
+        private static async Task EnsureAdminAccountAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            try
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                // Kiểm tra đã có tài khoản có role Admin chưa
+                var hasAdmin = await context.TaiKhoans.AnyAsync(t => t.VaiTro == VaiTro.Admin);
+                if (!hasAdmin)
+                {
+                    var adminUsername = Environment.GetEnvironmentVariable("AdminUsername");
+                    if (string.IsNullOrWhiteSpace(adminUsername))
+                        adminUsername = "admin";
+
+                    var adminPassword = Environment.GetEnvironmentVariable("AdminPassword");
+                    if (string.IsNullOrWhiteSpace(adminPassword))
+                        adminPassword = "123456";
+
+                    var adminFullName = Environment.GetEnvironmentVariable("AdminFullName");
+                    if (string.IsNullOrWhiteSpace(adminFullName))
+                        adminFullName = "Quản trị viên";
+
+                    var adminEmail = Environment.GetEnvironmentVariable("AdminEmail");
+                    if (string.IsNullOrWhiteSpace(adminEmail))
+                        adminEmail = "admin@nhahang.local";
+
+                    var success = await AccountSeeder.CreateAsync(
+                        context,
+                        adminUsername,
+                        adminPassword,
+                        adminFullName,
+                        adminEmail,
+                        VaiTro.Admin
+                    );
+
+                    if (success)
+                    {
+                        Console.WriteLine($"[Seed] Chưa có Admin trong hệ thống. Đã tự động tạo tài khoản Admin: {adminUsername}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Tránh throw exception làm dừng ứng dụng khi chạy các công cụ CLI chưa kết nối DB
+                Console.WriteLine($"[Seed Notice] Kiểm tra seed Admin: {ex.Message}");
+            }
         }
     }
 }
