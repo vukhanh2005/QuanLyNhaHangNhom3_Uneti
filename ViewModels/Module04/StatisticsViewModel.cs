@@ -2,33 +2,38 @@ namespace QuanLyNhaHang.ViewModels.Module04
 {
     public class StatisticsViewModel
     {
-        // Tổng số bàn
         public int TongSoBan { get; set; }
-
-        // Tổng số món ăn
         public int TongSoMonAn { get; set; }
+        public int TongSoPhieuDatBan { get; set; }
 
-        // Số bàn theo loại
-        public List<ThongKeViewModel> SoBanTheoLoai { get; set; }
-            = new List<ThongKeViewModel>();
+        // 1. Số bàn theo loại
+        public List<ThongKeViewModel> SoBanTheoLoai { get; set; } = new();
 
-        // Số bàn theo trạng thái
-        public List<ThongKeViewModel> SoBanTheoTrangThai { get; set; }
-            = new List<ThongKeViewModel>();
-            // Tổng số phiếu đặt bàn
-public int TongSoPhieuDatBan { get; set; }
+        // 2. Số bàn theo trạng thái
+        public List<ThongKeViewModel> SoBanTheoTrangThai { get; set; } = new();
 
-// Thống kê phiếu đặt bàn theo trạng thái
-public List<ThongKeViewModel> PhieuDatBanTheoTrangThai { get; set; }
-    = new List<ThongKeViewModel>();
+        // 3. Phiếu đặt bàn theo trạng thái
+        public List<ThongKeViewModel> PhieuDatBanTheoTrangThai { get; set; } = new();
+
+        // 4. Phiếu đặt bàn theo bàn
+        public List<ThongKeViewModel> PhieuTheoBan { get; set; } = new();
+
+        // 5. Phiếu đặt bàn theo loại bàn
+        public List<ThongKeViewModel> PhieuTheoLoaiBan { get; set; } = new();
+
+        // 6. Bàn được đặt nhiều nhất
+        public List<ThongKeViewModel> BanDuocDatNhieuNhat { get; set; } = new();
+
+        // 7. Phiếu đặt bàn theo khách hàng
+        public List<ThongKeViewModel> PhieuTheoKhachHang { get; set; } = new();
+
+        // 8. Phiếu đặt bàn theo tháng
+        public List<ThongKeViewModel> PhieuTheoThang { get; set; } = new();
     }
 
     public class ThongKeViewModel
     {
-        // Tên nhóm thống kê
         public string Nhom { get; set; } = string.Empty;
-
-        // Số lượng
         public int SoLuong { get; set; }
     }
 }

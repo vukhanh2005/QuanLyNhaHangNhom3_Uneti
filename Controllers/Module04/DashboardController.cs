@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QuanLyNhaHang.Models;
 using QuanLyNhaHang.ViewModels.Module04;
 
 namespace QuanLyNhaHang.Controllers.Module04
@@ -16,60 +15,59 @@ namespace QuanLyNhaHang.Controllers.Module04
 
         public async Task<IActionResult> Index()
         {
-            var tongSoBan = await _context.BanAns.CountAsync();
+            if (!HttpContext.Session.GetInt32("MaTaiKhoan").HasValue)
+                return RedirectToAction("Login", "Account");
 
-            var tongSoMonAn = await _context.MonAns.CountAsync();
+            if (!string.Equals(
+                HttpContext.Session.GetString("VaiTro"),
+                "Admin",
+                StringComparison.OrdinalIgnoreCase))
+                return RedirectToAction("Index", "TrangChu");
 
-            var tongSoLoaiBan = await _context.BanAns
-                .Select(b => b.MaLoaiBan)
-                .Distinct()
-                .CountAsync();
+            var model = new DashboardViewModel
+            {
+                TongSoLoaiBan = await _context.LoaiBans.CountAsync(),
+                TongSoBan = await _context.BanAns.CountAsync(),
+                TongSoMonAn = await _context.MonAns.CountAsync(),
+                TongSoKhachHang = await _context.KhachHangs.CountAsync(),
+                TongSoPhieuDatBan = await _context.PhieuDatBans.CountAsync(),
 
-            var soBanDangSuDung = await _context.BanAns
-                .CountAsync(b => b.TrangThai == "Đang sử dụng");
+                SoPhieuChoXacNhan = await _context.PhieuDatBans
+                    .CountAsync(p => p.TrangThai == "Chờ xác nhận"),
 
-            var soBanSanSang = await _context.BanAns
-                .CountAsync(b => b.TrangThai == "Sẵn sàng");
+                SoPhieuDaXacNhan = await _context.PhieuDatBans
+                    .CountAsync(p => p.TrangThai == "Đã xác nhận"),
 
-            // Thống kê số bàn theo tên loại bàn
-            var soBanTheoLoai = await _context.BanAns
-                .Include(b => b.LoaiBan)
-                .GroupBy(b => b.LoaiBan != null
-                    ? b.LoaiBan.TenLoaiBan
-                    : "Chưa phân loại")
-                .Select(g => new ThongKeBanViewModel
-                {
-                    Nhom = g.Key,
-                    SoLuong = g.Count()
-                })
-                .OrderBy(x => x.Nhom)
-                .ToListAsync();
+                SoBanDangSuDung = await _context.BanAns
+                    .CountAsync(b => b.TrangThai == "Đang sử dụng"),
 
-            // Thống kê số bàn theo trạng thái
-            var soBanTheoTrangThai = await _context.BanAns
-                .GroupBy(b => b.TrangThai)
-                .Select(g => new ThongKeBanViewModel
-                {
-                    Nhom = g.Key,
-                    SoLuong = g.Count()
-                })
-                .OrderBy(x => x.Nhom)
-                .ToListAsync();
+                SoBanSanSang = await _context.BanAns
+                    .CountAsync(b => b.TrangThai == "Sẵn sàng"),
 
-            var model = new QuanLyNhaHang.ViewModels.Module04.DashboardViewModel
-         {
-             TongSoLoaiBan = tongSoLoaiBan,
-             TongSoBan = tongSoBan,
-             TongSoMonAn = tongSoMonAn,
-             SoBanDangSuDung = soBanDangSuDung,
-             SoBanSanSang = soBanSanSang,
-             SoBanTheoLoai = soBanTheoLoai,
-             SoBanTheoTrangThai = soBanTheoTrangThai
-     };
+                SoBanTheoLoai = await _context.BanAns
+                    .GroupBy(b => b.LoaiBan != null
+                        ? b.LoaiBan.TenLoaiBan
+                        : "Chưa phân loại")
+                    .Select(g => new ThongKeBanViewModel
+                    {
+                        Nhom = g.Key,
+                        SoLuong = g.Count()
+                    })
+                    .OrderBy(x => x.Nhom)
+                    .ToListAsync(),
 
-            return View(
-                "~/Views/Module04/Dashboard/Index.cshtml",
-                model);
+                SoBanTheoTrangThai = await _context.BanAns
+                    .GroupBy(b => b.TrangThai)
+                    .Select(g => new ThongKeBanViewModel
+                    {
+                        Nhom = g.Key,
+                        SoLuong = g.Count()
+                    })
+                    .OrderBy(x => x.Nhom)
+                    .ToListAsync()
+            };
+
+            return View("~/Views/Module04/Dashboard/Index.cshtml", model);
         }
     }
 }

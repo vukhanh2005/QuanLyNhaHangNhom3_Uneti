@@ -1,0 +1,118 @@
+@model IEnumerable<QuanLyNhaHang.ViewModels.Module04.SuDungBanViewModel>
+
+@{
+    ViewData["Title"] = "Sử dụng bàn";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold">Quản lý sử dụng bàn</h2>
+        <p class="text-muted">
+            Theo dõi các phiếu đã xác nhận và các bàn đang phục vụ khách hàng.
+        </p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <h5>Chưa có phiếu đặt bàn cần xử lý</h5>
+                    <p class="text-muted">
+                        Các phiếu đã xác nhận hoặc đang sử dụng sẽ xuất hiện tại đây.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã phiếu</th>
+                                <th>Khách hàng</th>
+                                <th>Bàn</th>
+                                <th>Loại bàn</th>
+                                <th>Thời gian đặt</th>
+                                <th>Số người</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>#@item.MaPhieuDatBan</td>
+                                    <td>@item.TenKhachHang</td>
+                                    <td>@item.TenBan</td>
+                                    <td>@item.TenLoaiBan</td>
+                                    <td>@item.NgayGioDat.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@item.SoNguoi</td>
+                                    <td>
+                                        @if (item.TrangThai == "Đang sử dụng")
+                                        {
+                                            <span class="badge bg-success">Đang sử dụng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">Đã xác nhận</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.TrangThai == "Đã xác nhận")
+                                        {
+                                            <form asp-action="BatDauSuDung"
+                                                  method="post"
+                                                  onsubmit="return confirm('Xác nhận bắt đầu sử dụng bàn này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id"
+                                                       value="@item.MaPhieuDatBan" />
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-success">
+                                                    Bắt đầu sử dụng
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (item.TrangThai == "Đang sử dụng")
+                                        {
+                                            <form asp-action="KetThucSuDung"
+                                                  method="post"
+                                                  onsubmit="return confirm('Xác nhận kết thúc sử dụng bàn này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id"
+                                                       value="@item.MaPhieuDatBan" />
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-warning">
+                                                    Kết thúc sử dụng
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="PhieuDatBan"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Quay lại quản lý phiếu đặt bàn
+        </a>
+    </div>
+</div>

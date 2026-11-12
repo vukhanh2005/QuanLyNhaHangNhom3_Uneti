@@ -1,0 +1,28 @@
+@model IEnumerable<QuanLyNhaHang.ViewModels.Module04.ThongKeViewModel>
+
+@if (Model == null || !Model.Any())
+{
+    <p class="text-muted mb-0">Chưa có dữ liệu thống kê.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nội dung</th>
+                    <th class="text-end">Số lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Nhom</td>
+                        <td class="text-end fw-semibold">@item.SoLuong</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
